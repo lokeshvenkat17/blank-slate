@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BlankSlate.ViewModels"
+        xmlns:views="using:BlankSlate.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
+        x:Class="BlankSlate.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Width="1000" Height="650"
+        DragDrop.AllowDrop="True"
+        Title="{Binding WindowTitle}">
+
+  <Design.DataContext>
+    <vm:MainViewModel />
+  </Design.DataContext>
+
+  <DockPanel>
+
+    <!-- ============ Menu bar ============ -->
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="_New" Command="{Binding NewFileCommand}"
+                  HotKey="{OnPlatform Ctrl+N, macOS=Cmd+N}" InputGesture="{OnPlatform Ctrl+N, macOS=Cmd+N}" />
+        <MenuItem Header="_Open…" Command="{Binding OpenFileCommand}"
+                  HotKey="{OnPlatform Ctrl+O, macOS=Cmd+O}" InputGesture="{OnPlatform Ctrl+O, macOS=Cmd+O}" />
+        <Separator />
+        <MenuItem Header="_Save" Command="{Binding SaveCommand}"
+                  HotKey="{OnPlatform Ctrl+S, macOS=Cmd+S}" InputGesture="{OnPlatform Ctrl+S, macOS=Cmd+S}" />
+        <MenuItem Header="Save _As…" Command="{Binding SaveAsCommand}"
+                  HotKey="{OnPlatform Ctrl+Shift+S, macOS=Cmd+Shift+S}" InputGesture="{OnPlatform Ctrl+Shift+S, macOS=Cmd+Shift+S}" />
+        <MenuItem Header="Save A_ll" Command="{Binding SaveAllCommand}" />
+        <Separator />
+        <MenuItem Header="_Close Tab" Command="{Binding CloseDocumentCommand}"
+                  HotKey="{OnPlatform Ctrl+W, macOS=Cmd+W}" InputGesture="{OnPlatform Ctrl+W, macOS=Cmd+W}" />
+        <MenuItem Header="Close All" Command="{Binding CloseAllCommand}" />
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="_Undo" Command="{Binding UndoCommand}"
+                  InputGesture="{OnPlatform Ctrl+Z, macOS=Cmd+Z}" />
+        <MenuItem Header="_Redo" Command="{Binding RedoCommand}"
+                  InputGesture="{OnPlatform Ctrl+Y, macOS=Cmd+Shift+Z}" />
+        <Separator />
+        <MenuItem Header="Cu_t" Command="{Binding CutCommand}"
+                  InputGesture="{OnPlatform Ctrl+X, macOS=Cmd+X}" />
+        <MenuItem Header="_Copy" Command="{Binding CopyCommand}"
+                  InputGesture="{OnPlatform Ctrl+C, macOS=Cmd+C}" />
+        <MenuItem Header="_Paste" Command="{Binding PasteCommand}"
+                  InputGesture="{OnPlatform Ctrl+V, macOS=Cmd+V}" />
+        <Separator />
+        <MenuItem Header="Select _All" Command="{Binding SelectAllCommand}"
+                  InputGesture="{OnPlatform Ctrl+A, macOS=Cmd+A}" />
+      </MenuItem>
+    </Menu>
+
+    <!-- ============ Status bar ============ -->
+    <Border DockPanel.Dock="Bottom"
+            Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+            Padding="10,3">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="24">
+          <TextBlock FontSize="12">
+            <Run Text="Ln " /><Run Text="{Binding SelectedDocument.CaretLine, FallbackValue=1}" /><Run Text=", Col " /><Run Text="{Binding SelectedDocument.CaretColumn, FallbackValue=1}" />
+          </TextBlock>
+          <TextBlock FontSize="12" Text="{Binding SelectedDocument.EncodingName, FallbackValue=UTF-8}" />
+        </StackPanel>
+        <TextBlock FontSize="12"
+                   Text="{Binding SelectedDocument.FilePath, FallbackValue=''}"
+                   TextTrimming="CharacterEllipsis" />
+      </DockPanel>
+    </Border>
+
+    <!-- ============ Document tabs ============ -->
+    <TabControl ItemsSource="{Binding Documents}"
+                SelectedItem="{Binding SelectedDocument}"
+                Padding="0">
+      <TabControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:DocumentViewModel">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+            <TextBlock Text="•" VerticalAlignment="Center" FontWeight="Bold"
+                       IsVisible="{Binding IsDirty}" />
+            <Button Content="✕"
+                    FontSize="10"
+                    Padding="4,1"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    VerticalAlignment="Center"
+                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseDocumentCommand}"
+                    CommandParameter="{Binding}" />
+          </StackPanel>
+        </DataTemplate>
+      </TabControl.ItemTemplate>
+      <TabControl.ContentTemplate>
+        <DataTemplate x:DataType="vm:DocumentViewModel">
+          <views:EditorView />
+        </DataTemplate>
+      </TabControl.ContentTemplate>
+    </TabControl>
+
+  </DockPanel>
+</Window>

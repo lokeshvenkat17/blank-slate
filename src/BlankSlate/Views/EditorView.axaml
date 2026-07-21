@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ae="using:AvaloniaEdit"
+             xmlns:vm="using:BlankSlate.ViewModels"
+             x:Class="BlankSlate.Views.EditorView"
+             x:DataType="vm:DocumentViewModel">
+
+  <ae:TextEditor Name="Editor"
+                 Document="{Binding Document}"
+                 ShowLineNumbers="True"
+                 FontFamily="Menlo,Monaco,Consolas,'Courier New',monospace"
+                 FontSize="13"
+                 HorizontalScrollBarVisibility="Auto"
+                 VerticalScrollBarVisibility="Auto" />
+
+</UserControl>
