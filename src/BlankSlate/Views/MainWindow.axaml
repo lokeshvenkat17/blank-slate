@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:BlankSlate.ViewModels"
         xmlns:views="using:BlankSlate.Views"
+        xmlns:models="using:BlankSlate.Models"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
@@ -50,6 +51,32 @@
         <Separator />
         <MenuItem Header="Select _All" Command="{Binding SelectAllCommand}"
                   InputGesture="{OnPlatform Ctrl+A, macOS=Cmd+A}" />
+        <Separator />
+        <MenuItem Header="EOL Conversion">
+          <MenuItem Header="Windows (CR LF)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Crlf}" />
+          <MenuItem Header="Unix (LF)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Lf}" />
+          <MenuItem Header="Macintosh (CR)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Cr}" />
+        </MenuItem>
+      </MenuItem>
+      <MenuItem Header="_View">
+        <MenuItem Header="_Word Wrap" ToggleType="CheckBox" IsChecked="{Binding Settings.WordWrap}" />
+        <MenuItem Header="Show White_space and TAB" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowWhitespace}" />
+        <MenuItem Header="Show End of _Line" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowEndOfLine}" />
+        <MenuItem Header="Highlight Current _Line" ToggleType="CheckBox" IsChecked="{Binding Settings.HighlightCurrentLine}" />
+        <Separator />
+        <MenuItem Header="Zoom _In" Command="{Binding ZoomInCommand}"
+                  InputGesture="{OnPlatform Ctrl+OemPlus, macOS=Cmd+OemPlus}" />
+        <MenuItem Header="Zoom _Out" Command="{Binding ZoomOutCommand}"
+                  InputGesture="{OnPlatform Ctrl+OemMinus, macOS=Cmd+OemMinus}" />
+        <MenuItem Header="_Restore Default Zoom" Command="{Binding ZoomResetCommand}"
+                  InputGesture="{OnPlatform Ctrl+D0, macOS=Cmd+D0}" />
+      </MenuItem>
+      <MenuItem Header="Enco_ding">
+        <MenuItem Header="UTF-8" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8}" />
+        <MenuItem Header="UTF-8-BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8Bom}" />
+        <MenuItem Header="UTF-16 LE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16LeBom}" />
+        <MenuItem Header="UTF-16 BE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16BeBom}" />
+        <MenuItem Header="ANSI" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Ansi}" />
       </MenuItem>
     </Menu>
 
@@ -62,7 +89,8 @@
           <TextBlock FontSize="12">
             <Run Text="Ln " /><Run Text="{Binding SelectedDocument.CaretLine, FallbackValue=1}" /><Run Text=", Col " /><Run Text="{Binding SelectedDocument.CaretColumn, FallbackValue=1}" />
           </TextBlock>
-          <TextBlock FontSize="12" Text="{Binding SelectedDocument.EncodingName, FallbackValue=UTF-8}" />
+          <TextBlock FontSize="12" Text="{Binding SelectedDocument.EolLabel, FallbackValue='Unix (LF)'}" />
+          <TextBlock FontSize="12" Text="{Binding SelectedDocument.EncodingLabel, FallbackValue=UTF-8}" />
         </StackPanel>
         <TextBlock FontSize="12"
                    Text="{Binding SelectedDocument.FilePath, FallbackValue=''}"

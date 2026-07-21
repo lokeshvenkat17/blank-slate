@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using BlankSlate.Models;
 using BlankSlate.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,6 +14,8 @@ public partial class MainViewModel : ViewModelBase
     private readonly IDialogService? _dialogs;
 
     public ObservableCollection<DocumentViewModel> Documents { get; } = [];
+
+    public EditorSettings Settings { get; } = new();
 
     [ObservableProperty]
     public partial DocumentViewModel? SelectedDocument { get; set; }
@@ -54,7 +57,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void NewFile()
     {
-        var doc = new DocumentViewModel();
+        var doc = new DocumentViewModel { Settings = Settings };
         Documents.Add(doc);
         SelectedDocument = doc;
     }
@@ -79,6 +82,7 @@ public partial class MainViewModel : ViewModelBase
         }
 
         var doc = await DocumentViewModel.LoadFromFileAsync(path);
+        doc.Settings = Settings;
 
         // Replace a pristine single untitled tab, like Notepad++ does.
         if (Documents.Count == 1 && Documents[0] is { FilePath: null, IsDirty: false } blank
@@ -189,4 +193,18 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand] private void Copy() => SelectedDocument?.EditorHandle?.Copy();
     [RelayCommand] private void Paste() => SelectedDocument?.EditorHandle?.Paste();
     [RelayCommand] private void SelectAll() => SelectedDocument?.EditorHandle?.SelectAll();
+
+    // ---- Edit menu: EOL conversion (per-document) ----
+
+    [RelayCommand] private void SetEol(EolMode mode) => SelectedDocument?.ConvertEol(mode);
+
+    // ---- Encoding menu (per-document) ----
+
+    [RelayCommand] private void SetEncoding(TextEncodingKind kind) => SelectedDocument?.SetEncoding(kind);
+
+    // ---- View menu: zoom (global) ----
+
+    [RelayCommand] private void ZoomIn() => Settings.ZoomIn();
+    [RelayCommand] private void ZoomOut() => Settings.ZoomOut();
+    [RelayCommand] private void ZoomReset() => Settings.ZoomReset();
 }

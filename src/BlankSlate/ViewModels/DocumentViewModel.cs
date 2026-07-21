@@ -1,7 +1,7 @@
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using AvaloniaEdit.Document;
+using BlankSlate.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BlankSlate.ViewModels;
@@ -31,6 +31,9 @@ public partial class DocumentViewModel : ViewModelBase
     /// <summary>Set by EditorView when the tab's editor is attached.</summary>
     public IEditorHandle? EditorHandle { get; set; }
 
+    /// <summary>Global view preferences (word wrap, zoom, etc.), injected by MainViewModel.</summary>
+    public EditorSettings? Settings { get; set; }
+
     [ObservableProperty]
     public partial string? FilePath { get; set; }
 
@@ -46,12 +49,19 @@ public partial class DocumentViewModel : ViewModelBase
     [ObservableProperty]
     public partial int CaretColumn { get; set; } = 1;
 
-    /// <summary>Encoding used when the file was read; reused on save. UTF-8 (no BOM) for new files, like Notepad++.</summary>
-    public Encoding Encoding { get; set; } = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    /// <summary>Encoding the file will be saved with. UTF-8 (no BOM) for new files, like Notepad++.</summary>
+    [ObservableProperty]
+    public partial TextEncodingKind EncodingKind { get; set; } = TextEncodingKind.Utf8;
 
-    public string EncodingName => Encoding is UTF8Encoding u
-        ? (u.GetPreamble().Length > 0 ? "UTF-8-BOM" : "UTF-8")
-        : Encoding.WebName.ToUpperInvariant();
+    /// <summary>Line-ending convention. LF for new files (this app targets macOS/Linux first).</summary>
+    [ObservableProperty]
+    public partial EolMode EolMode { get; set; } = EolMode.Lf;
+
+    public string EncodingLabel => TextEncodings.GetLabel(EncodingKind);
+    public string EolLabel => EolModes.GetLabel(EolMode);
+
+    partial void OnEncodingKindChanged(TextEncodingKind value) => OnPropertyChanged(nameof(EncodingLabel));
+    partial void OnEolModeChanged(EolMode value) => OnPropertyChanged(nameof(EolLabel));
 
     public DocumentViewModel()
     {
@@ -68,15 +78,16 @@ public partial class DocumentViewModel : ViewModelBase
     public static async Task<DocumentViewModel> LoadFromFileAsync(string path)
     {
         var doc = new DocumentViewModel();
-        // detectEncodingFromByteOrderMarks handles UTF-8/16/32 BOMs; richer
-        // heuristic detection (ANSI code pages etc.) arrives in Phase 2.
-        using var reader = new StreamReader(path, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-        var text = await reader.ReadToEndAsync();
+        var bytes = await File.ReadAllBytesAsync(path);
+        var (kind, _, text) = TextEncodings.DetectAndDecode(bytes);
+
         doc._suppressDirty = true;
         doc.Document.Text = text;
         doc._suppressDirty = false;
         doc.Document.UndoStack.ClearAll();
-        doc.Encoding = reader.CurrentEncoding;
+
+        doc.EncodingKind = kind;
+        doc.EolMode = EolModes.Detect(text);
         doc.FilePath = path;
         doc.Title = Path.GetFileName(path);
         doc.IsDirty = false;
@@ -86,8 +97,26 @@ public partial class DocumentViewModel : ViewModelBase
     /// <summary>Saves to <see cref="FilePath"/> (caller ensures it is set).</summary>
     public async Task SaveAsync()
     {
-        await File.WriteAllTextAsync(FilePath!, Document.Text, Encoding);
+        await File.WriteAllTextAsync(FilePath!, Document.Text, TextEncodings.GetEncoding(EncodingKind));
         Title = Path.GetFileName(FilePath!);
         IsDirty = false;
+    }
+
+    /// <summary>"Encode in X": reinterprets how the in-memory text will be written on next save, like Notepad++'s Encoding menu.</summary>
+    public void SetEncoding(TextEncodingKind kind)
+    {
+        if (EncodingKind == kind)
+            return;
+        EncodingKind = kind;
+        IsDirty = true;
+    }
+
+    /// <summary>Rewrites every line ending in the buffer to <paramref name="mode"/>.</summary>
+    public void ConvertEol(EolMode mode)
+    {
+        if (EolMode == mode)
+            return;
+        Document.Text = EolModes.Normalize(Document.Text, mode);
+        EolMode = mode;
     }
 }
