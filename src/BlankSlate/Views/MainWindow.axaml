@@ -58,6 +58,43 @@
           <MenuItem Header="Macintosh (CR)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Cr}" />
         </MenuItem>
       </MenuItem>
+      <MenuItem Header="_Search">
+        <MenuItem Header="_Find…" Command="{Binding ShowFindCommand}"
+                  HotKey="{OnPlatform Ctrl+F, macOS=Cmd+F}" InputGesture="{OnPlatform Ctrl+F, macOS=Cmd+F}" />
+        <MenuItem Header="Find in Fi_les…" Command="{Binding ShowFindInFilesCommand}"
+                  HotKey="{OnPlatform Ctrl+Shift+F, macOS=Cmd+Shift+F}" InputGesture="{OnPlatform Ctrl+Shift+F, macOS=Cmd+Shift+F}" />
+        <MenuItem Header="Find _Next" Command="{Binding FindNextCommand}"
+                  HotKey="F3" InputGesture="F3" />
+        <MenuItem Header="Find _Previous" Command="{Binding FindPreviousCommand}"
+                  HotKey="Shift+F3" InputGesture="Shift+F3" />
+        <MenuItem Header="Select and Find Ne_xt" Command="{Binding SelectAndFindNextCommand}"
+                  HotKey="{OnPlatform Ctrl+F3, macOS=Cmd+F3}" InputGesture="{OnPlatform Ctrl+F3, macOS=Cmd+F3}" />
+        <MenuItem Header="Select and Find Pre_vious" Command="{Binding SelectAndFindPreviousCommand}"
+                  HotKey="{OnPlatform Ctrl+Shift+F3, macOS=Cmd+Shift+F3}" InputGesture="{OnPlatform Ctrl+Shift+F3, macOS=Cmd+Shift+F3}" />
+        <MenuItem Header="_Replace…" Command="{Binding ShowReplaceCommand}"
+                  HotKey="{OnPlatform Ctrl+H, macOS=Cmd+Alt+F}" InputGesture="{OnPlatform Ctrl+H, macOS=Cmd+Alt+F}" />
+        <Separator />
+        <MenuItem Header="_Go to…" Command="{Binding GoToLineCommand}"
+                  HotKey="{OnPlatform Ctrl+G, macOS=Cmd+L}" InputGesture="{OnPlatform Ctrl+G, macOS=Cmd+L}" />
+        <MenuItem Header="Mar_k…" Command="{Binding ShowMarkCommand}" />
+        <Separator />
+        <MenuItem Header="_Bookmark">
+          <MenuItem Header="Toggle Bookmark" Command="{Binding ToggleBookmarkCommand}"
+                    HotKey="{OnPlatform Ctrl+F2, macOS=Cmd+F2}" InputGesture="{OnPlatform Ctrl+F2, macOS=Cmd+F2}" />
+          <MenuItem Header="Next Bookmark" Command="{Binding NextBookmarkCommand}"
+                    HotKey="F2" InputGesture="F2" />
+          <MenuItem Header="Previous Bookmark" Command="{Binding PreviousBookmarkCommand}"
+                    HotKey="Shift+F2" InputGesture="Shift+F2" />
+          <MenuItem Header="Clear All Bookmarks" Command="{Binding ClearBookmarksCommand}" />
+          <MenuItem Header="Inverse Bookmarks" Command="{Binding InverseBookmarksCommand}" />
+          <Separator />
+          <MenuItem Header="Cut Bookmarked Lines" Command="{Binding CutBookmarkedLinesCommand}" />
+          <MenuItem Header="Copy Bookmarked Lines" Command="{Binding CopyBookmarkedLinesCommand}" />
+          <MenuItem Header="Paste to (Replace) Bookmarked Lines" Command="{Binding PasteToBookmarkedLinesCommand}" />
+          <MenuItem Header="Remove Bookmarked Lines" Command="{Binding RemoveBookmarkedLinesCommand}" />
+          <MenuItem Header="Remove Non-Bookmarked Lines" Command="{Binding RemoveNonBookmarkedLinesCommand}" />
+        </MenuItem>
+      </MenuItem>
       <MenuItem Header="_View">
         <MenuItem Header="_Word Wrap" ToggleType="CheckBox" IsChecked="{Binding Settings.WordWrap}" />
         <MenuItem Header="Show White_space and TAB" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowWhitespace}" />
@@ -98,33 +135,69 @@
       </DockPanel>
     </Border>
 
-    <!-- ============ Document tabs ============ -->
-    <TabControl ItemsSource="{Binding Documents}"
-                SelectedItem="{Binding SelectedDocument}"
-                Padding="0">
-      <TabControl.ItemTemplate>
-        <DataTemplate x:DataType="vm:DocumentViewModel">
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
-            <TextBlock Text="•" VerticalAlignment="Center" FontWeight="Bold"
-                       IsVisible="{Binding IsDirty}" />
-            <Button Content="✕"
-                    FontSize="10"
-                    Padding="4,1"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    VerticalAlignment="Center"
-                    Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseDocumentCommand}"
-                    CommandParameter="{Binding}" />
-          </StackPanel>
-        </DataTemplate>
-      </TabControl.ItemTemplate>
-      <TabControl.ContentTemplate>
-        <DataTemplate x:DataType="vm:DocumentViewModel">
-          <views:EditorView />
-        </DataTemplate>
-      </TabControl.ContentTemplate>
-    </TabControl>
+    <!-- ============ Document tabs + search results ============ -->
+    <Grid RowDefinitions="*,Auto,Auto">
+
+      <TabControl Grid.Row="0"
+                  ItemsSource="{Binding Documents}"
+                  SelectedItem="{Binding SelectedDocument}"
+                  Padding="0">
+        <TabControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:DocumentViewModel">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+              <TextBlock Text="•" VerticalAlignment="Center" FontWeight="Bold"
+                         IsVisible="{Binding IsDirty}" />
+              <Button Content="✕"
+                      FontSize="10"
+                      Padding="4,1"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      VerticalAlignment="Center"
+                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseDocumentCommand}"
+                      CommandParameter="{Binding}" />
+            </StackPanel>
+          </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+          <DataTemplate x:DataType="vm:DocumentViewModel">
+            <views:EditorView />
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+
+      <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch"
+                    IsVisible="{Binding IsSearchResultsVisible}" />
+
+      <Grid Grid.Row="2" RowDefinitions="Auto,*" Height="180"
+            IsVisible="{Binding IsSearchResultsVisible}">
+        <Border Grid.Row="0" Padding="8,4"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="✕" FontSize="10" Padding="4,1"
+                    Background="Transparent" BorderThickness="0"
+                    Command="{Binding CloseSearchResultsCommand}" />
+            <TextBlock Text="{Binding SearchResultsHeader}" FontWeight="Bold" FontSize="12"
+                       VerticalAlignment="Center" />
+          </DockPanel>
+        </Border>
+        <ListBox Grid.Row="1" Name="ResultsList"
+                 ItemsSource="{Binding SearchResults}"
+                 DoubleTapped="OnResultDoubleTapped">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:SearchResultItem">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="{Binding Location}" FontWeight="Bold" FontSize="12" />
+                <TextBlock Text="{Binding LineText}" FontSize="12"
+                           FontFamily="Menlo,Monaco,Consolas,monospace"
+                           TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+
+    </Grid>
 
   </DockPanel>
 </Window>

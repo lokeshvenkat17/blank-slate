@@ -36,6 +36,12 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void OnResultDoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (ViewModel is not null && ResultsList.SelectedItem is ViewModels.SearchResultItem item)
+            await ViewModel.GoToSearchResultCommand.ExecuteAsync(item);
+    }
+
     protected override async void OnClosing(WindowClosingEventArgs e)
     {
         base.OnClosing(e);

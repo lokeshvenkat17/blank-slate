@@ -17,6 +17,16 @@ public partial class MainViewModel : ViewModelBase
 
     public EditorSettings Settings { get; } = new();
 
+    public FindReplaceViewModel FindReplace { get; }
+
+    public ObservableCollection<SearchResultItem> SearchResults { get; } = [];
+
+    [ObservableProperty]
+    public partial string SearchResultsHeader { get; set; } = "";
+
+    [ObservableProperty]
+    public partial bool IsSearchResultsVisible { get; set; }
+
     [ObservableProperty]
     public partial DocumentViewModel? SelectedDocument { get; set; }
 
@@ -29,6 +39,7 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel(IDialogService? dialogs)
     {
         _dialogs = dialogs;
+        FindReplace = new FindReplaceViewModel(this);
         NewFile();
     }
 
@@ -207,4 +218,141 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand] private void ZoomIn() => Settings.ZoomIn();
     [RelayCommand] private void ZoomOut() => Settings.ZoomOut();
     [RelayCommand] private void ZoomReset() => Settings.ZoomReset();
+
+    // ---- Search menu ----
+
+    [RelayCommand] private void ShowFind() => _dialogs?.ShowFindReplace(FindReplace, 0);
+    [RelayCommand] private void ShowReplace() => _dialogs?.ShowFindReplace(FindReplace, 1);
+    [RelayCommand] private void ShowMark() => _dialogs?.ShowFindReplace(FindReplace, 2);
+    [RelayCommand] private void ShowFindInFiles() => _dialogs?.ShowFindReplace(FindReplace, 3);
+
+    [RelayCommand] private void FindNext() => FindReplace.FindNext();
+    [RelayCommand] private void FindPrevious() => FindReplace.FindPrevious();
+
+    /// <summary>Notepad++ "Select and Find Next": seed the search with the current selection, then jump.</summary>
+    [RelayCommand]
+    private void SelectAndFindNext()
+    {
+        SeedFindFromSelection();
+        FindReplace.FindNext();
+    }
+
+    [RelayCommand]
+    private void SelectAndFindPrevious()
+    {
+        SeedFindFromSelection();
+        FindReplace.FindPrevious();
+    }
+
+    private void SeedFindFromSelection()
+    {
+        if (SelectedDocument?.EditorHandle?.SelectedText is { Length: > 0 } selection)
+            FindReplace.FindWhat = selection;
+    }
+
+    [RelayCommand]
+    private async Task GoToLineAsync()
+    {
+        if (SelectedDocument is not { } doc || _dialogs is null)
+            return;
+        var line = await _dialogs.ShowGoToLineAsync(doc.CaretLine, doc.Document.LineCount);
+        if (line is { } l)
+            doc.RequestGoToLine(l);
+    }
+
+    public void ShowSearchResults(System.Collections.Generic.IEnumerable<SearchResultItem> results, string header)
+    {
+        SearchResults.Clear();
+        foreach (var item in results)
+            SearchResults.Add(item);
+        SearchResultsHeader = header;
+        IsSearchResultsVisible = true;
+    }
+
+    [RelayCommand]
+    private void CloseSearchResults() => IsSearchResultsVisible = false;
+
+    [RelayCommand]
+    private async Task GoToSearchResultAsync(SearchResultItem? item)
+    {
+        if (item is null)
+            return;
+        if (item.FilePath is { } path)
+        {
+            await OpenPathAsync(path);
+            SelectedDocument?.RequestGoToLine(item.LineNumber);
+        }
+        else
+        {
+            // Unsaved document: find it by tab title.
+            var doc = Documents.FirstOrDefault(d => d.FilePath is null && d.Title == item.DisplayName);
+            if (doc is not null)
+            {
+                SelectedDocument = doc;
+                doc.RequestGoToLine(item.LineNumber);
+            }
+        }
+    }
+
+    // ---- Search menu: bookmarks ----
+
+    [RelayCommand]
+    private void ToggleBookmark()
+    {
+        if (SelectedDocument is { } doc)
+            doc.Bookmarks.Toggle(doc.CaretLine);
+    }
+
+    [RelayCommand]
+    private void NextBookmark()
+    {
+        if (SelectedDocument is { } doc && doc.Bookmarks.Next(doc.CaretLine) is { } line)
+            doc.RequestGoToLine(line);
+    }
+
+    [RelayCommand]
+    private void PreviousBookmark()
+    {
+        if (SelectedDocument is { } doc && doc.Bookmarks.Previous(doc.CaretLine) is { } line)
+            doc.RequestGoToLine(line);
+    }
+
+    [RelayCommand]
+    private void ClearBookmarks() => SelectedDocument?.Bookmarks.Clear();
+
+    [RelayCommand]
+    private void InverseBookmarks() => SelectedDocument?.Bookmarks.Inverse();
+
+    [RelayCommand]
+    private async Task CopyBookmarkedLinesAsync()
+    {
+        if (SelectedDocument is { EditorHandle: { } handle } doc
+            && doc.GetBookmarkedLinesText() is { } text)
+            await handle.SetClipboardTextAsync(text);
+    }
+
+    [RelayCommand]
+    private async Task CutBookmarkedLinesAsync()
+    {
+        if (SelectedDocument is { EditorHandle: { } handle } doc
+            && doc.GetBookmarkedLinesText() is { } text)
+        {
+            await handle.SetClipboardTextAsync(text);
+            doc.RemoveBookmarkedLines();
+        }
+    }
+
+    [RelayCommand]
+    private async Task PasteToBookmarkedLinesAsync()
+    {
+        if (SelectedDocument is { EditorHandle: { } handle } doc
+            && await handle.GetClipboardTextAsync() is { Length: > 0 } clipboard)
+            doc.PasteToBookmarkedLines(clipboard);
+    }
+
+    [RelayCommand]
+    private void RemoveBookmarkedLines() => SelectedDocument?.RemoveBookmarkedLines();
+
+    [RelayCommand]
+    private void RemoveNonBookmarkedLines() => SelectedDocument?.RemoveNonBookmarkedLines();
 }

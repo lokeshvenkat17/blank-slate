@@ -1,0 +1,95 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:BlankSlate.ViewModels"
+        x:Class="BlankSlate.Views.FindReplaceWindow"
+        x:DataType="vm:FindReplaceViewModel"
+        Title="Find / Replace"
+        Width="520" SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="12">
+
+    <!-- Shared options + status footer -->
+    <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,10,0,0">
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <CheckBox Content="Match _case" IsChecked="{Binding MatchCase}" />
+        <CheckBox Content="Match _whole word only" IsChecked="{Binding WholeWord}" />
+        <CheckBox Content="Wra_p around" IsChecked="{Binding WrapAround}" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <TextBlock Text="Search Mode:" VerticalAlignment="Center" />
+        <RadioButton GroupName="mode" Content="_Normal" IsChecked="{Binding IsNormalMode}" />
+        <RadioButton GroupName="mode" Content="E_xtended (\n, \r, \t, \0, \x…)" IsChecked="{Binding IsExtendedMode}" />
+        <RadioButton GroupName="mode" Content="Re_gular expression" IsChecked="{Binding IsRegexMode}" />
+      </StackPanel>
+      <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource SystemAccentColor}"
+                 TextWrapping="Wrap" MinHeight="18" />
+    </StackPanel>
+
+    <TabControl Name="Tabs">
+
+      <!-- ============ Find ============ -->
+      <TabItem Header="Find">
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="0,8">
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="Find what:" VerticalAlignment="Center" Margin="0,0,8,0" />
+          <TextBox Grid.Row="0" Grid.Column="1" Name="FindBox1" Text="{Binding FindWhat}" />
+          <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+            <Button Content="Find Next" Command="{Binding FindNextCommand}" IsDefault="True" />
+            <Button Content="Find Previous" Command="{Binding FindPreviousCommand}" />
+            <Button Content="Count" Command="{Binding CountOccurrencesCommand}" />
+            <Button Content="Find All in Current Document" Command="{Binding FindAllInCurrentDocumentCommand}" />
+          </StackPanel>
+        </Grid>
+      </TabItem>
+
+      <!-- ============ Replace ============ -->
+      <TabItem Header="Replace">
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" Margin="0,8">
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="Find what:" VerticalAlignment="Center" Margin="0,0,8,0" />
+          <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FindWhat}" />
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="Replace with:" VerticalAlignment="Center" Margin="0,8,8,0" />
+          <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ReplaceWith}" Margin="0,8,0,0" />
+          <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+            <Button Content="Replace" Command="{Binding ReplaceNextCommand}" IsDefault="True" />
+            <Button Content="Replace All" Command="{Binding ReplaceAllCommand}" />
+            <Button Content="Replace All in All Opened" Command="{Binding ReplaceAllInAllOpenDocumentsCommand}" />
+          </StackPanel>
+        </Grid>
+      </TabItem>
+
+      <!-- ============ Mark ============ -->
+      <TabItem Header="Mark">
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="0,8">
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="Find what:" VerticalAlignment="Center" Margin="0,0,8,0" />
+          <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FindWhat}" />
+          <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+            <Button Content="Mark All" Command="{Binding MarkAllCommand}" IsDefault="True" />
+            <Button Content="Clear all marks" Command="{Binding ClearMarksCommand}" />
+          </StackPanel>
+        </Grid>
+      </TabItem>
+
+      <!-- ============ Find in Files ============ -->
+      <TabItem Header="Find in Files">
+        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,8">
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="Find what:" VerticalAlignment="Center" Margin="0,0,8,0" />
+          <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding FindWhat}" />
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="Filters:" VerticalAlignment="Center" Margin="0,8,8,0" />
+          <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Filters}" Margin="0,8,0,0"
+                   PlaceholderText="*.cs;*.txt (semicolon-separated)" />
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="Directory:" VerticalAlignment="Center" Margin="0,8,8,0" />
+          <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Directory}" Margin="0,8,0,0" />
+          <Button Grid.Row="2" Grid.Column="2" Content="…" Margin="6,8,0,0" Click="OnBrowseDirectory" />
+          <CheckBox Grid.Row="3" Grid.Column="1" Content="In all su_b-folders" IsChecked="{Binding InSubfolders}" Margin="0,8,0,0" />
+          <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+            <Button Content="Find All" Command="{Binding FindAllInFilesCommand}" IsDefault="True" />
+            <Button Content="Cancel Search" Command="{Binding CancelFilesSearchCommand}" IsVisible="{Binding IsSearching}" />
+          </StackPanel>
+        </Grid>
+      </TabItem>
+
+    </TabControl>
+  </DockPanel>
+</Window>
