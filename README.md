@@ -26,8 +26,8 @@ dotnet run --project src/BlankSlate
 |---|---|---|
 | 1 | Core editor shell: tabs, open/save, dirty tracking, close prompts, menus, status bar, drag-and-drop | ✅ |
 | 2 | Editor essentials: encoding & EOL detection/conversion, word wrap, zoom, whitespace display | ✅ |
-| 3 | Search suite: Find/Replace (regex), Find in Files, bookmarks | 🔜 |
-| 4 | Syntax highlighting for 80+ languages via TextMate grammars, themes | |
+| 3 | Search suite: Find/Replace (regex), Find in Files, bookmarks | ✅ |
+| 4 | Syntax highlighting for 80+ languages via TextMate grammars, themes | 🔜 |
 | 5 | Sessions, settings persistence, recent files, auto-backup | |
 | 6 | Power features: macros, split view, function list, document map, multi-cursor | |
 | 7 | Plugin system (.NET plugin API) | |
