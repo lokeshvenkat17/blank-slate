@@ -87,6 +87,16 @@ public partial class MainWindow : Window
     private void OnAboutClick(object? sender, RoutedEventArgs e)
         => (Avalonia.Application.Current as App)?.ShowAboutWindow();
 
+    /// <summary>Double-click a tab header to rename the document (file on disk, or tab title when untitled).</summary>
+    private async void OnTabHeaderDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (ViewModel is null || (sender as Control)?.DataContext is not DocumentViewModel doc)
+            return;
+        e.Handled = true;
+        ViewModel.SelectedDocument = doc;
+        await ViewModel.RenameCommand.ExecuteAsync(null);
+    }
+
     private void OnFunctionDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (ViewModel is not null && FunctionListBox.SelectedItem is Services.FunctionEntry entry)
