@@ -226,6 +226,37 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand] private void SetEol(EolMode mode) => SelectedDocument?.ConvertEol(mode);
 
+    // ---- Edit menu: text operations (Phase 6a) ----
+
+    [RelayCommand] private void Delete() => SelectedDocument?.EditorHandle?.Delete();
+    [RelayCommand] private void ConvertCase(CaseKind kind) => SelectedDocument?.ApplyCase(kind);
+    [RelayCommand] private void LineOperation(LineOpKind kind) => SelectedDocument?.ApplyLineOp(kind);
+    [RelayCommand] private void SortLines(SortKind kind) => SelectedDocument?.ApplySort(kind);
+    [RelayCommand] private void BlankOperation(BlankOpKind kind) => SelectedDocument?.ApplyBlankOp(kind);
+    [RelayCommand] private void CommentOperation(CommentOpKind kind) => SelectedDocument?.ApplyComment(kind);
+    [RelayCommand] private void IncreaseIndent() => SelectedDocument?.ApplyIndent(increase: true);
+    [RelayCommand] private void DecreaseIndent() => SelectedDocument?.ApplyIndent(increase: false);
+    [RelayCommand] private void InsertDateTimeShort() => SelectedDocument?.InsertDateTime(longFormat: false);
+    [RelayCommand] private void InsertDateTimeLong() => SelectedDocument?.InsertDateTime(longFormat: true);
+
+    [RelayCommand]
+    private async Task CopyToClipboardAsync(string what)
+    {
+        if (SelectedDocument is not { EditorHandle: { } handle } doc)
+            return;
+        var text = what switch
+        {
+            "path" => doc.FilePath,
+            "name" => doc.FilePath is { } p ? Path.GetFileName(p) : doc.Title,
+            "dir" => doc.FilePath is { } p ? Path.GetDirectoryName(p) : null,
+            "allnames" => string.Join("\n", Documents.Select(d => d.FilePath is { } p ? Path.GetFileName(p) : d.Title)),
+            "allpaths" => string.Join("\n", Documents.Where(d => d.FilePath is not null).Select(d => d.FilePath)),
+            _ => null,
+        };
+        if (!string.IsNullOrEmpty(text))
+            await handle.SetClipboardTextAsync(text);
+    }
+
     // ---- Encoding menu (per-document) ----
 
     [RelayCommand] private void SetEncoding(TextEncodingKind kind) => SelectedDocument?.SetEncoding(kind);

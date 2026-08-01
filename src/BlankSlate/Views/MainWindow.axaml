@@ -49,9 +49,92 @@
                   InputGesture="{OnPlatform Ctrl+C, macOS=Cmd+C}" />
         <MenuItem Header="_Paste" Command="{Binding PasteCommand}"
                   InputGesture="{OnPlatform Ctrl+V, macOS=Cmd+V}" />
+        <MenuItem Header="_Delete" Command="{Binding DeleteCommand}" InputGesture="Delete" />
         <Separator />
         <MenuItem Header="Select _All" Command="{Binding SelectAllCommand}"
                   InputGesture="{OnPlatform Ctrl+A, macOS=Cmd+A}" />
+        <Separator />
+        <MenuItem Header="Insert">
+          <MenuItem Header="Date Time (short)" Command="{Binding InsertDateTimeShortCommand}" />
+          <MenuItem Header="Date Time (long)" Command="{Binding InsertDateTimeLongCommand}" />
+        </MenuItem>
+        <MenuItem Header="Cop_y to Clipboard">
+          <MenuItem Header="Copy Current Full File Path" Command="{Binding CopyToClipboardCommand}" CommandParameter="path" />
+          <MenuItem Header="Copy Current Filename" Command="{Binding CopyToClipboardCommand}" CommandParameter="name" />
+          <MenuItem Header="Copy Current Dir. Path" Command="{Binding CopyToClipboardCommand}" CommandParameter="dir" />
+          <Separator />
+          <MenuItem Header="Copy All Filenames" Command="{Binding CopyToClipboardCommand}" CommandParameter="allnames" />
+          <MenuItem Header="Copy All File Paths" Command="{Binding CopyToClipboardCommand}" CommandParameter="allpaths" />
+        </MenuItem>
+        <MenuItem Header="_Indent">
+          <MenuItem Header="Increase Line Indent" Command="{Binding IncreaseIndentCommand}" />
+          <MenuItem Header="Decrease Line Indent" Command="{Binding DecreaseIndentCommand}" />
+        </MenuItem>
+        <MenuItem Header="Con_vert Case to">
+          <MenuItem Header="UPPERCASE" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Upper}"
+                    InputGesture="{OnPlatform Ctrl+Shift+U, macOS=Cmd+Shift+U}" />
+          <MenuItem Header="lowercase" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Lower}"
+                    InputGesture="{OnPlatform Ctrl+U, macOS=Cmd+U}" />
+          <MenuItem Header="Proper Case" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.ProperForce}" />
+          <MenuItem Header="Proper Case (blend)" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.ProperBlend}" />
+          <MenuItem Header="Sentence case" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.SentenceForce}" />
+          <MenuItem Header="Sentence case (blend)" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.SentenceBlend}" />
+          <MenuItem Header="iNVERT cASE" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Invert}" />
+          <MenuItem Header="ranDOm CasE" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Random}" />
+        </MenuItem>
+        <MenuItem Header="_Line Operations">
+          <MenuItem Header="Duplicate Current Line" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Duplicate}"
+                    InputGesture="{OnPlatform Ctrl+D, macOS=Cmd+D}" />
+          <MenuItem Header="Remove Duplicate Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveDuplicates}" />
+          <MenuItem Header="Remove Consecutive Duplicate Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveConsecutiveDuplicates}" />
+          <MenuItem Header="Join Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.JoinLines}"
+                    InputGesture="{OnPlatform Ctrl+J, macOS=Cmd+J}" />
+          <MenuItem Header="Move Up Current Line" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.MoveUp}"
+                    InputGesture="{OnPlatform Ctrl+Shift+Up, macOS=Cmd+Shift+Up}" />
+          <MenuItem Header="Move Down Current Line" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.MoveDown}"
+                    InputGesture="{OnPlatform Ctrl+Shift+Down, macOS=Cmd+Shift+Down}" />
+          <MenuItem Header="Remove Empty Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveEmpty}" />
+          <MenuItem Header="Remove Empty Lines (Containing Blank characters)" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveEmptyWithBlank}" />
+          <MenuItem Header="Insert Blank Line Above Current" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.BlankAbove}" />
+          <MenuItem Header="Insert Blank Line Below Current" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.BlankBelow}" />
+          <MenuItem Header="Reverse Line Order" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Reverse}" />
+          <MenuItem Header="Randomize Line Order" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Randomize}" />
+          <Separator />
+          <MenuItem Header="Sort Lines Lexicographically Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexAsc}" />
+          <MenuItem Header="Sort Lines Lex. Ascending Ignoring Case" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexCiAsc}" />
+          <MenuItem Header="Sort Lines In Locale Order Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LocaleAsc}" />
+          <MenuItem Header="Sort Lines As Integers Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.IntAsc}" />
+          <MenuItem Header="Sort Lines As Decimals (Comma) Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecCommaAsc}" />
+          <MenuItem Header="Sort Lines As Decimals (Dot) Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecDotAsc}" />
+          <MenuItem Header="Sort Lines By Length Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LenAsc}" />
+          <Separator />
+          <MenuItem Header="Sort Lines Lexicographically Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexDesc}" />
+          <MenuItem Header="Sort Lines Lex. Descending Ignoring Case" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexCiDesc}" />
+          <MenuItem Header="Sort Lines In Locale Order Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LocaleDesc}" />
+          <MenuItem Header="Sort Lines As Integers Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.IntDesc}" />
+          <MenuItem Header="Sort Lines As Decimals (Comma) Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecCommaDesc}" />
+          <MenuItem Header="Sort Lines As Decimals (Dot) Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecDotDesc}" />
+          <MenuItem Header="Sort Lines By Length Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LenDesc}" />
+        </MenuItem>
+        <MenuItem Header="Co_mment/Uncomment">
+          <MenuItem Header="Toggle Single Line Comment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.ToggleLine}"
+                    InputGesture="{OnPlatform Ctrl+Q, macOS=Cmd+OemQuestion}" />
+          <MenuItem Header="Single Line Comment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.SetLine}" />
+          <MenuItem Header="Single Line Uncomment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.RemoveLine}" />
+          <MenuItem Header="Block Comment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.BlockSet}" />
+          <MenuItem Header="Block Uncomment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.BlockRemove}" />
+        </MenuItem>
+        <MenuItem Header="_Blank Operations">
+          <MenuItem Header="Trim Trailing Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimTrailing}" />
+          <MenuItem Header="Trim Leading Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimLeading}" />
+          <MenuItem Header="Trim Leading and Trailing Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimBoth}" />
+          <MenuItem Header="EOL to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.EolToSpace}" />
+          <MenuItem Header="Trim Both and EOL to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimAll}" />
+          <Separator />
+          <MenuItem Header="TAB to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TabToSpace}" />
+          <MenuItem Header="Space to TAB (All)" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.SpaceToTabAll}" />
+          <MenuItem Header="Space to TAB (Leading)" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.SpaceToTabLeading}" />
+        </MenuItem>
         <Separator />
         <MenuItem Header="EOL Conversion">
           <MenuItem Header="Windows (CR LF)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Crlf}" />

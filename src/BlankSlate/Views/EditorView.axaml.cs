@@ -159,6 +159,7 @@ public partial class EditorView : UserControl, IEditorHandle
     public void Cut() => Editor.Cut();
     public void Copy() => Editor.Copy();
     public void Paste() => Editor.Paste();
+    public void Delete() => Editor.Delete();
     public void SelectAll() => Editor.SelectAll();
 
     public string? SelectedText => Editor.SelectedText;

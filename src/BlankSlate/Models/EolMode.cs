@@ -14,7 +14,7 @@ public static class EolModes
         _ => mode.ToString(),
     };
 
-    private static string GetTerminator(EolMode mode) => mode switch
+    public static string GetTerminator(EolMode mode) => mode switch
     {
         EolMode.Crlf => "\r\n",
         EolMode.Cr => "\r",

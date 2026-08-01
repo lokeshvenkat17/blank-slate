@@ -20,6 +20,7 @@ public interface IEditorHandle
     void Cut();
     void Copy();
     void Paste();
+    void Delete();
     void SelectAll();
 
     string? SelectedText { get; }
@@ -211,6 +212,194 @@ public partial class DocumentViewModel : ViewModelBase
             }
         }
         Bookmarks.NotifyChanged();
+    }
+
+    // ---- Edit-menu text operations (Phase 6a) ----
+
+    private string EolTerminator => EolModes.GetTerminator(EolMode);
+
+    /// <summary>1-based inclusive line range covered by the selection (or the caret line).</summary>
+    private (int StartLine, int EndLine) GetTargetLineRange()
+    {
+        if (EditorHandle is not { } handle)
+            return (CaretLine, CaretLine);
+        if (handle.SelectionLength == 0)
+            return (CaretLine, CaretLine);
+        var start = Document.GetLineByOffset(handle.SelectionStart).LineNumber;
+        var endOffset = handle.SelectionStart + handle.SelectionLength;
+        var endLine = Document.GetLineByOffset(endOffset);
+        // A selection ending exactly at a line start shouldn't drag that line in.
+        if (endOffset == endLine.Offset && endLine.LineNumber > start)
+            return (start, endLine.LineNumber - 1);
+        return (start, endLine.LineNumber);
+    }
+
+    private List<string> GetLines(int startLine, int endLine)
+    {
+        var lines = new List<string>(endLine - startLine + 1);
+        for (var i = startLine; i <= endLine; i++)
+        {
+            var line = Document.GetLineByNumber(i);
+            lines.Add(Document.GetText(line.Offset, line.Length));
+        }
+        return lines;
+    }
+
+    private void ReplaceLineRange(int startLine, int endLine, IReadOnlyList<string> newLines)
+    {
+        var start = Document.GetLineByNumber(startLine).Offset;
+        var end = Document.GetLineByNumber(endLine).EndOffset;
+        Document.Replace(start, end - start, string.Join(EolTerminator, newLines));
+    }
+
+    /// <summary>Case conversion applies to the selection only (like Notepad++).</summary>
+    public void ApplyCase(CaseKind kind)
+    {
+        if (EditorHandle is not { SelectionLength: > 0 } handle)
+            return;
+        var start = handle.SelectionStart;
+        var length = handle.SelectionLength;
+        var converted = Services.TextOperations.ConvertCase(Document.GetText(start, length), kind);
+        Document.Replace(start, length, converted);
+        handle.SelectAndReveal(start, converted.Length);
+    }
+
+    public void ApplyLineOp(LineOpKind kind)
+    {
+        var (startLine, endLine) = GetTargetLineRange();
+        using (Document.RunUpdate())
+        {
+            switch (kind)
+            {
+                case LineOpKind.Duplicate:
+                {
+                    var block = GetLines(startLine, endLine);
+                    var insertAt = Document.GetLineByNumber(endLine).EndOffset;
+                    Document.Insert(insertAt, EolTerminator + string.Join(EolTerminator, block));
+                    break;
+                }
+                case LineOpKind.JoinLines:
+                {
+                    if (endLine == startLine && endLine < Document.LineCount)
+                        endLine++; // joining needs at least two lines
+                    var joined = string.Join(" ", GetLines(startLine, endLine).Select(l => l.Trim()));
+                    ReplaceLineRange(startLine, endLine, [joined]);
+                    break;
+                }
+                case LineOpKind.MoveUp when startLine > 1:
+                {
+                    var block = GetLines(startLine, endLine);
+                    var above = GetLines(startLine - 1, startLine - 1)[0];
+                    ReplaceLineRange(startLine - 1, endLine, [.. block, above]);
+                    EditorHandle?.GoToLine(startLine - 1);
+                    break;
+                }
+                case LineOpKind.MoveDown when endLine < Document.LineCount:
+                {
+                    var block = GetLines(startLine, endLine);
+                    var below = GetLines(endLine + 1, endLine + 1)[0];
+                    ReplaceLineRange(startLine, endLine + 1, [below, .. block]);
+                    EditorHandle?.GoToLine(startLine + 1);
+                    break;
+                }
+                case LineOpKind.BlankAbove:
+                    Document.Insert(Document.GetLineByNumber(startLine).Offset, EolTerminator);
+                    break;
+                case LineOpKind.BlankBelow:
+                    Document.Insert(Document.GetLineByNumber(endLine).EndOffset, EolTerminator);
+                    break;
+                case LineOpKind.RemoveDuplicates or LineOpKind.RemoveConsecutiveDuplicates
+                    or LineOpKind.RemoveEmpty or LineOpKind.RemoveEmptyWithBlank
+                    or LineOpKind.Reverse or LineOpKind.Randomize:
+                {
+                    // Selection scope, or the whole document when nothing is selected (Notepad++ behavior).
+                    var wholeDoc = EditorHandle is not { SelectionLength: > 0 };
+                    var (s, e) = wholeDoc ? (1, Document.LineCount) : (startLine, endLine);
+                    ReplaceLineRange(s, e, Services.TextOperations.ApplyLineOp(GetLines(s, e), kind));
+                    break;
+                }
+            }
+        }
+    }
+
+    public void ApplySort(SortKind kind)
+    {
+        var wholeDoc = EditorHandle is not { SelectionLength: > 0 };
+        var (startLine, endLine) = wholeDoc ? (1, Document.LineCount) : GetTargetLineRange();
+        if (endLine <= startLine)
+            return;
+        ReplaceLineRange(startLine, endLine, Services.TextOperations.SortLines(GetLines(startLine, endLine), kind));
+    }
+
+    public void ApplyBlankOp(BlankOpKind kind)
+    {
+        var newText = Services.TextOperations.ApplyBlankOp(Document.Text, kind);
+        if (newText != Document.Text)
+            Document.Text = newText;
+    }
+
+    public void ApplyIndent(bool increase)
+    {
+        var (startLine, endLine) = GetTargetLineRange();
+        ReplaceLineRange(startLine, endLine, Services.TextOperations.Indent(GetLines(startLine, endLine), increase));
+    }
+
+    public void ApplyComment(CommentOpKind kind)
+    {
+        var tokens = CommentDefinitions.Get(LanguageId);
+        using (Document.RunUpdate())
+        {
+            switch (kind)
+            {
+                case CommentOpKind.ToggleLine or CommentOpKind.SetLine or CommentOpKind.RemoveLine:
+                {
+                    if (tokens?.Line is not { } token)
+                        return;
+                    var (startLine, endLine) = GetTargetLineRange();
+                    var lines = GetLines(startLine, endLine);
+                    var uncomment = kind == CommentOpKind.RemoveLine
+                        || (kind == CommentOpKind.ToggleLine && Services.TextOperations.AllLinesCommented(lines, token));
+                    var newLines = uncomment
+                        ? Services.TextOperations.UncommentLines(lines, token)
+                        : Services.TextOperations.CommentLines(lines, token);
+                    ReplaceLineRange(startLine, endLine, newLines);
+                    break;
+                }
+                case CommentOpKind.BlockSet:
+                {
+                    if (tokens is not { BlockStart: { } bs, BlockEnd: { } be } || EditorHandle is not { SelectionLength: > 0 } handle)
+                        return;
+                    var start = handle.SelectionStart;
+                    var length = handle.SelectionLength;
+                    Document.Insert(start + length, be);
+                    Document.Insert(start, bs);
+                    handle.SelectAndReveal(start, length + bs.Length + be.Length);
+                    break;
+                }
+                case CommentOpKind.BlockRemove:
+                {
+                    if (tokens is not { BlockStart: { } bs, BlockEnd: { } be } || EditorHandle is not { SelectionLength: > 0 } handle)
+                        return;
+                    var text = Document.GetText(handle.SelectionStart, handle.SelectionLength).Trim();
+                    if (!text.StartsWith(bs, System.StringComparison.Ordinal) || !text.EndsWith(be, System.StringComparison.Ordinal))
+                        return;
+                    var inner = text[bs.Length..^be.Length];
+                    Document.Replace(handle.SelectionStart, handle.SelectionLength, inner);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void InsertDateTime(bool longFormat)
+    {
+        if (EditorHandle is not { } handle)
+            return;
+        var now = System.DateTime.Now;
+        var text = longFormat
+            ? $"{now.ToShortTimeString()} {now.ToLongDateString()}"
+            : $"{now.ToShortTimeString()} {now.ToShortDateString()}";
+        Document.Insert(handle.CaretOffset, text);
     }
 
     /// <summary>Replaces each bookmarked line's text with the corresponding line of <paramref name="clipboardText"/> (last line reused when clipboard is shorter).</summary>
