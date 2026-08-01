@@ -10,6 +10,7 @@
         x:DataType="vm:MainViewModel"
         Width="1000" Height="650"
         DragDrop.AllowDrop="True"
+        Icon="/Assets/BlankSlateIcon.png"
         Title="{Binding WindowTitle}">
 
   <Design.DataContext>
@@ -206,6 +207,9 @@
         <MenuItem Header="Run a Macro Multiple Times…" Command="{Binding RunMacroMultipleTimesCommand}" />
         <MenuItem Header="Save Current Recorded Macro…" Command="{Binding SaveCurrentMacroCommand}" />
         <Separator Name="MacroMenuSeparator" />
+      </MenuItem>
+      <MenuItem Header="_Help">
+        <MenuItem Header="About BlankSlate" Click="OnAboutClick" />
       </MenuItem>
       <MenuItem Header="Enco_ding">
         <MenuItem Header="UTF-8" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8}" />

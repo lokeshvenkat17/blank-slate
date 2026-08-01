@@ -40,6 +40,15 @@ public partial class EditorView : UserControl, IEditorHandle
 
         DataContextChanged += (_, _) => OnDataContextSwitched();
 
+        // Focus the editor whenever the tab becomes visible so the caret is
+        // immediately blinking and typing just works.
+        AttachedToVisualTree += (_, _) =>
+        {
+            if (IsPrimary)
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => Editor.Focus(),
+                    Avalonia.Threading.DispatcherPriority.Input);
+        };
+
         DetachedFromVisualTree += (_, _) =>
         {
             if (_settings is not null)
@@ -57,6 +66,15 @@ public partial class EditorView : UserControl, IEditorHandle
     {
         var dark = Application.Current?.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
         _textMate.SetTheme(SyntaxService.LoadTheme(dark));
+        // TextMate themes only recolor the text; caret, line numbers, and selection
+        // need explicit brushes or they vanish against the dark background.
+        Editor.TextArea.CaretBrush = dark ? Brushes.White : Brushes.Black;
+        Editor.LineNumbersForeground = new SolidColorBrush(dark
+            ? Color.FromRgb(0x85, 0x85, 0x85)
+            : Color.FromRgb(0x9A, 0x9A, 0x9A));
+        Editor.TextArea.SelectionBrush = new SolidColorBrush(dark
+            ? Color.FromArgb(0x70, 0x26, 0x4F, 0x78)
+            : Color.FromArgb(0x60, 0xAD, 0xD6, 0xFF));
     }
 
     private void ApplyGrammar()

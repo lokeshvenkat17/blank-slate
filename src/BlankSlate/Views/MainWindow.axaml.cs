@@ -84,6 +84,9 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnAboutClick(object? sender, RoutedEventArgs e)
+        => (Avalonia.Application.Current as App)?.ShowAboutWindow();
+
     private void OnFunctionDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (ViewModel is not null && FunctionListBox.SelectedItem is Services.FunctionEntry entry)

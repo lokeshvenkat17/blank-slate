@@ -21,8 +21,12 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // Shown in the macOS application menu (otherwise "Avalonia Application").
+        Name = "BlankSlate";
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            SetupMacAppMenu();
             var mainWindow = new MainWindow();
             _viewModel = new MainViewModel(new DialogService(mainWindow));
             mainWindow.DataContext = _viewModel;
@@ -56,6 +60,25 @@ public partial class App : Application
         {
             System.Console.Error.WriteLine($"Startup restore/open failed: {ex}");
         }
+    }
+
+    /// <summary>Native macOS app menu: About BlankSlate (Quit/Hide etc. come from the default menu).</summary>
+    private void SetupMacAppMenu()
+    {
+        var about = new Avalonia.Controls.NativeMenuItem("About BlankSlate");
+        about.Click += (_, _) => ShowAboutWindow();
+        var menu = new Avalonia.Controls.NativeMenu();
+        menu.Add(about);
+        Avalonia.Controls.NativeMenu.SetMenu(this, menu);
+    }
+
+    public void ShowAboutWindow()
+    {
+        var about = new AboutWindow();
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
+            about.ShowDialog(owner);
+        else
+            about.Show();
     }
 
     private async void OnActivated(object? sender, ActivatedEventArgs e)

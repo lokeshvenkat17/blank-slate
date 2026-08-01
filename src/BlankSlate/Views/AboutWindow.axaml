@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BlankSlate.Views.AboutWindow"
+        Title="About BlankSlate"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+
+  <StackPanel Margin="36,28" Spacing="10" Width="360">
+    <Image Source="avares://BlankSlate/Assets/BlankSlateIcon.png" Width="96" Height="96"
+           HorizontalAlignment="Center" />
+    <TextBlock Text="BlankSlate" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />
+    <TextBlock Name="VersionText" Text="Version 0.1.0" FontSize="13" Opacity="0.7"
+               HorizontalAlignment="Center" />
+    <TextBlock TextWrapping="Wrap" TextAlignment="Center" FontSize="13" Margin="0,8,0,0"
+               Text="A free, cross-platform text editor for macOS inspired by Notepad++ — tabs, 60+ language syntax highlighting, powerful search, macros, and sessions that never lose your work." />
+    <TextBlock TextWrapping="Wrap" TextAlignment="Center" FontSize="11" Opacity="0.6" Margin="0,8,0,0"
+               Text="Built with .NET and Avalonia UI · Text engine: AvaloniaEdit · Grammars: TextMate" />
+    <Button Content="OK" IsDefault="True" IsCancel="True" MinWidth="90"
+            HorizontalAlignment="Center" Margin="0,10,0,0" Click="OnOkClick" />
+  </StackPanel>
+</Window>
