@@ -185,6 +185,10 @@
         <MenuItem Header="Show End of _Line" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowEndOfLine}" />
         <MenuItem Header="Highlight Current _Line" ToggleType="CheckBox" IsChecked="{Binding Settings.HighlightCurrentLine}" />
         <Separator />
+        <MenuItem Header="Split Window" ToggleType="CheckBox" IsChecked="{Binding IsSplitViewActive}" />
+        <MenuItem Header="Document _Map" ToggleType="CheckBox" IsChecked="{Binding IsDocumentMapVisible}" />
+        <MenuItem Header="_Function List" ToggleType="CheckBox" IsChecked="{Binding IsFunctionListVisible}" />
+        <Separator />
         <MenuItem Header="Zoom _In" Command="{Binding ZoomInCommand}"
                   InputGesture="{OnPlatform Ctrl+OemPlus, macOS=Cmd+OemPlus}" />
         <MenuItem Header="Zoom _Out" Command="{Binding ZoomOutCommand}"
@@ -193,6 +197,16 @@
                   InputGesture="{OnPlatform Ctrl+D0, macOS=Cmd+D0}" />
       </MenuItem>
       <MenuItem Header="_Language" Name="LanguageMenu" />
+      <MenuItem Header="_Macro" Name="MacroMenu">
+        <MenuItem Header="Start Recording" Command="{Binding StartMacroRecordingCommand}"
+                  HotKey="{OnPlatform Ctrl+Shift+R, macOS=Cmd+Shift+R}" InputGesture="{OnPlatform Ctrl+Shift+R, macOS=Cmd+Shift+R}" />
+        <MenuItem Header="Stop Recording" Command="{Binding StopMacroRecordingCommand}" />
+        <MenuItem Header="Playback" Command="{Binding PlaybackMacroCommand}"
+                  HotKey="{OnPlatform Ctrl+Shift+P, macOS=Cmd+Shift+P}" InputGesture="{OnPlatform Ctrl+Shift+P, macOS=Cmd+Shift+P}" />
+        <MenuItem Header="Run a Macro Multiple Times…" Command="{Binding RunMacroMultipleTimesCommand}" />
+        <MenuItem Header="Save Current Recorded Macro…" Command="{Binding SaveCurrentMacroCommand}" />
+        <Separator Name="MacroMenuSeparator" />
+      </MenuItem>
       <MenuItem Header="Enco_ding">
         <MenuItem Header="UTF-8" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8}" />
         <MenuItem Header="UTF-8-BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8Bom}" />
@@ -221,6 +235,30 @@
       </DockPanel>
     </Border>
 
+    <!-- ============ Function List panel ============ -->
+    <Border DockPanel.Dock="Right" Width="220" IsVisible="{Binding IsFunctionListVisible}"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderThickness="1,0,0,0">
+      <Grid RowDefinitions="Auto,*">
+        <Border Grid.Row="0" Padding="8,4"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+          <TextBlock Text="Function List" FontWeight="Bold" FontSize="12" />
+        </Border>
+        <ListBox Grid.Row="1" Name="FunctionListBox"
+                 ItemsSource="{Binding FunctionList}"
+                 DoubleTapped="OnFunctionDoubleTapped">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="ƒ" Foreground="{DynamicResource SystemAccentColor}" FontWeight="Bold" />
+                <TextBlock Text="{Binding Name}" FontSize="12" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </Border>
+
     <!-- ============ Document tabs + search results ============ -->
     <Grid RowDefinitions="*,Auto,Auto">
 
@@ -247,7 +285,7 @@
         </TabControl.ItemTemplate>
         <TabControl.ContentTemplate>
           <DataTemplate x:DataType="vm:DocumentViewModel">
-            <views:EditorView />
+            <views:DocumentEditorHost />
           </DataTemplate>
         </TabControl.ContentTemplate>
       </TabControl>

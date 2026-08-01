@@ -42,6 +42,29 @@ public partial class MainViewModel : ViewModelBase
     private DispatcherTimer? _backupTimer;
     private int _backupIntervalSeconds = 7;
 
+    // ---- Phase 6b state ----
+
+    [ObservableProperty]
+    public partial bool IsSplitViewActive { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDocumentMapVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsFunctionListVisible { get; set; }
+
+    public ObservableCollection<FunctionEntry> FunctionList { get; } = [];
+
+    [ObservableProperty]
+    public partial bool IsRecordingMacro { get; set; }
+
+    public ObservableCollection<Macro> SavedMacros { get; } = [];
+
+    private readonly List<MacroStep> _recordingSteps = [];
+    private Macro? _lastMacro;
+    private DispatcherTimer? _functionListTimer;
+    private DocumentViewModel? _functionListDoc;
+
     [ObservableProperty]
     public partial DocumentViewModel? SelectedDocument { get; set; }
 
@@ -65,6 +88,7 @@ public partial class MainViewModel : ViewModelBase
         if (newValue is not null)
             newValue.PropertyChanged += OnSelectedDocumentPropertyChanged;
         UpdateWindowTitle();
+        WatchFunctionListDocument(newValue);
     }
 
     private void OnSelectedDocumentPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -432,6 +456,7 @@ public partial class MainViewModel : ViewModelBase
         }
 
         Settings.PropertyChanged += (_, _) => SaveSettings();
+        LoadSavedMacros();
 
         _backupTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(_backupIntervalSeconds) };
         _backupTimer.Tick += (_, _) => SaveSession();
@@ -585,5 +610,160 @@ public partial class MainViewModel : ViewModelBase
     {
         RecentFiles.Clear();
         SaveSettings();
+    }
+
+    // ---- Function list (View > Function List) ----
+
+    partial void OnIsFunctionListVisibleChanged(bool value)
+    {
+        if (value)
+            RefreshFunctionList();
+    }
+
+    /// <summary>Re-parses the active document; debounced on text changes via <see cref="_functionListTimer"/>.</summary>
+    public void RefreshFunctionList()
+    {
+        FunctionList.Clear();
+        if (!IsFunctionListVisible || SelectedDocument is not { } doc)
+            return;
+        foreach (var entry in FunctionListService.GetFunctions(doc.LanguageId, doc.Document.Text))
+            FunctionList.Add(entry);
+    }
+
+    /// <summary>Called from OnSelectedDocumentChanged to track the active document's edits.</summary>
+    private void WatchFunctionListDocument(DocumentViewModel? doc)
+    {
+        if (_functionListDoc is not null)
+            _functionListDoc.Document.TextChanged -= OnFunctionListTextChanged;
+        _functionListDoc = doc;
+        if (doc is not null)
+            doc.Document.TextChanged += OnFunctionListTextChanged;
+        RefreshFunctionList();
+    }
+
+    private void OnFunctionListTextChanged(object? sender, EventArgs e)
+    {
+        if (!IsFunctionListVisible)
+            return;
+        _functionListTimer ??= CreateFunctionListTimer();
+        _functionListTimer.Stop();
+        _functionListTimer.Start();
+    }
+
+    private DispatcherTimer CreateFunctionListTimer()
+    {
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            RefreshFunctionList();
+        };
+        return timer;
+    }
+
+    [RelayCommand]
+    private void GoToFunction(FunctionEntry? entry)
+    {
+        if (entry is not null && SelectedDocument is { } doc)
+            doc.RequestGoToLine(entry.Line);
+    }
+
+    // ---- Macros (Macro menu) ----
+
+    [RelayCommand]
+    private void StartMacroRecording()
+    {
+        _recordingSteps.Clear();
+        IsRecordingMacro = true;
+    }
+
+    [RelayCommand]
+    private void StopMacroRecording()
+    {
+        IsRecordingMacro = false;
+        if (_recordingSteps.Count > 0)
+            _lastMacro = new Macro { Name = "(last recorded)", Steps = [.. _recordingSteps] };
+    }
+
+    /// <summary>Called by MainWindow's tunnel handlers while recording.</summary>
+    public void RecordMacroStep(MacroStep step)
+    {
+        if (IsRecordingMacro)
+            _recordingSteps.Add(step);
+    }
+
+    [RelayCommand]
+    private void PlaybackMacro() => PlayMacro(_lastMacro, 1);
+
+    [RelayCommand]
+    private void PlaySavedMacro(Macro? macro) => PlayMacro(macro, 1);
+
+    [RelayCommand]
+    private async Task RunMacroMultipleTimesAsync()
+    {
+        if (_lastMacro is null || _dialogs is null)
+            return;
+        var answer = await _dialogs.ShowTextInputAsync("Run a Macro Multiple Times", "Times to run:", "2");
+        if (answer is not null && int.TryParse(answer, out var times) && times is > 0 and <= 10_000)
+            PlayMacro(_lastMacro, times);
+    }
+
+    private void PlayMacro(Macro? macro, int times)
+    {
+        if (macro is null || IsRecordingMacro || SelectedDocument?.EditorHandle is not { } handle)
+            return;
+        for (var i = 0; i < times; i++)
+        {
+            foreach (var step in macro.Steps)
+            {
+                switch (step)
+                {
+                    case MacroTextStep t:
+                        handle.ReplayText(t.Text);
+                        break;
+                    case MacroKeyStep k:
+                        handle.ReplayKey(k.Key, k.Modifiers);
+                        break;
+                }
+            }
+        }
+    }
+
+    [RelayCommand]
+    private async Task SaveCurrentMacroAsync()
+    {
+        if (_lastMacro is null || _dialogs is null)
+            return;
+        var name = await _dialogs.ShowTextInputAsync("Save Macro", "Macro name:", "My Macro");
+        if (name is null)
+            return;
+        var existing = SavedMacros.FirstOrDefault(m => m.Name == name);
+        if (existing is not null)
+            SavedMacros.Remove(existing);
+        SavedMacros.Add(new Macro { Name = name, Steps = [.. _lastMacro.Steps] });
+        PersistMacros();
+    }
+
+    public void LoadSavedMacros()
+    {
+        foreach (var data in PersistenceService.LoadMacros())
+        {
+            SavedMacros.Add(new Macro
+            {
+                Name = data.Name,
+                Steps = data.Steps.Select(s => s.ToStep()).ToList(),
+            });
+        }
+    }
+
+    private void PersistMacros()
+    {
+        PersistenceService.SaveMacros(SavedMacros
+            .Select(m => new MacroData
+            {
+                Name = m.Name,
+                Steps = m.Steps.Select(MacroStepData.From).ToList(),
+            })
+            .ToList());
     }
 }

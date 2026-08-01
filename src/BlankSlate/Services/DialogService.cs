@@ -19,6 +19,9 @@ public interface IDialogService
     void ShowFindReplace(ViewModels.FindReplaceViewModel viewModel, int tabIndex);
 
     Task<int?> ShowGoToLineAsync(int currentLine, int maxLine);
+
+    /// <summary>Generic single-field text prompt. Returns null on cancel.</summary>
+    Task<string?> ShowTextInputAsync(string title, string label, string initial = "");
 }
 
 /// <summary>Window-backed implementation using Avalonia's StorageProvider.</summary>
@@ -39,6 +42,54 @@ public sealed class DialogService(Window owner) : IDialogService
             _findReplaceWindow.Activate();
         }
         _findReplaceWindow.SelectTab(tabIndex);
+    }
+
+    public async Task<string?> ShowTextInputAsync(string title, string label, string initial = "")
+    {
+        string? result = null;
+        var dialog = new Window
+        {
+            Title = title,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            CanResize = false,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ShowInTaskbar = false,
+        };
+
+        var input = new TextBox { Text = initial, MinWidth = 260 };
+        var ok = new Button { Content = "OK", IsDefault = true, MinWidth = 80 };
+        ok.Click += (_, _) =>
+        {
+            if (!string.IsNullOrWhiteSpace(input.Text))
+            {
+                result = input.Text.Trim();
+                dialog.Close();
+            }
+        };
+        var cancel = new Button { Content = "Cancel", IsCancel = true, MinWidth = 80 };
+        cancel.Click += (_, _) => dialog.Close();
+
+        dialog.Content = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(24),
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock { Text = label },
+                input,
+                new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 8,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Children = { cancel, ok },
+                },
+            },
+        };
+
+        input.AttachedToVisualTree += (_, _) => { input.Focus(); input.SelectAll(); };
+        await dialog.ShowDialog(owner);
+        return result;
     }
 
     public async Task<int?> ShowGoToLineAsync(int currentLine, int maxLine)

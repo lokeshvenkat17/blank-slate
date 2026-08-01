@@ -37,6 +37,12 @@ public static class PersistenceService
 
     public static void SaveSession(SessionData session) => SaveJson(SessionPath, session);
 
+    private static string MacrosPath => Path.Combine(AppDataDir, "macros.json");
+
+    public static List<MacroData> LoadMacros() => LoadJson<List<MacroData>>(MacrosPath) ?? [];
+
+    public static void SaveMacros(List<MacroData> macros) => SaveJson(MacrosPath, macros);
+
     public static void WriteBackup(string fileName, string content)
     {
         try

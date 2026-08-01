@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ae="using:AvaloniaEdit"
+             xmlns:views="using:BlankSlate.Views"
+             xmlns:vm="using:BlankSlate.ViewModels"
+             x:Class="BlankSlate.Views.DocumentEditorHost"
+             x:DataType="vm:DocumentViewModel">
+
+  <Grid ColumnDefinitions="*,Auto">
+
+    <!-- Primary editor + optional split clone (columns managed in code-behind) -->
+    <Grid Grid.Column="0" Name="EditorsGrid">
+      <views:EditorView Name="PrimaryEditor" />
+    </Grid>
+
+    <!-- Document map (minimap): same document at tiny font, click/drag to navigate -->
+    <Border Grid.Column="1" Name="MinimapPane" Width="110" IsVisible="False"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderThickness="1,0,0,0">
+      <ae:TextEditor Name="Minimap"
+                     Document="{Binding Document}"
+                     FontFamily="Menlo,Monaco,Consolas,monospace"
+                     FontSize="3"
+                     IsReadOnly="True"
+                     ShowLineNumbers="False"
+                     HorizontalScrollBarVisibility="Hidden"
+                     VerticalScrollBarVisibility="Hidden" />
+    </Border>
+
+  </Grid>
+</UserControl>

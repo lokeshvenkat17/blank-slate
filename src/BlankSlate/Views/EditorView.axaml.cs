@@ -72,6 +72,10 @@ public partial class EditorView : UserControl, IEditorHandle
         }
     }
 
+    /// <summary>False for the split-view clone: it shares the document but must not claim the
+    /// document's editor handle or drive caret state.</summary>
+    public bool IsPrimary { get; set; } = true;
+
     private void OnDataContextSwitched()
     {
         if (_settings is not null)
@@ -83,7 +87,8 @@ public partial class EditorView : UserControl, IEditorHandle
             return;
 
         _documentVm = vm;
-        vm.EditorHandle = this;
+        if (IsPrimary)
+            vm.EditorHandle = this;
         vm.PropertyChanged += OnDocumentPropertyChanged;
 
         _bookmarkMargin.Bookmarks = vm.Bookmarks;
@@ -97,6 +102,9 @@ public partial class EditorView : UserControl, IEditorHandle
             _settings.PropertyChanged += OnSettingsChanged;
             ApplySettings();
         }
+
+        if (!IsPrimary)
+            return;
 
         UpdateCaretPosition();
 
@@ -146,7 +154,7 @@ public partial class EditorView : UserControl, IEditorHandle
 
     private void UpdateCaretPosition()
     {
-        if (DataContext is not DocumentViewModel vm)
+        if (!IsPrimary || DataContext is not DocumentViewModel vm)
             return;
         vm.CaretLine = Editor.TextArea.Caret.Line;
         vm.CaretColumn = Editor.TextArea.Caret.Column;
@@ -201,5 +209,28 @@ public partial class EditorView : UserControl, IEditorHandle
         if (TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard)
             return await clipboard.TryGetTextAsync();
         return null;
+    }
+
+    // ---- Macro replay: re-dispatch recorded input onto the text area ----
+
+    public void ReplayText(string text)
+    {
+        Editor.TextArea.RaiseEvent(new TextInputEventArgs
+        {
+            RoutedEvent = TextInputEvent,
+            Source = Editor.TextArea,
+            Text = text,
+        });
+    }
+
+    public void ReplayKey(Key key, KeyModifiers modifiers)
+    {
+        Editor.TextArea.RaiseEvent(new KeyEventArgs
+        {
+            RoutedEvent = KeyDownEvent,
+            Source = Editor.TextArea,
+            Key = key,
+            KeyModifiers = modifiers,
+        });
     }
 }

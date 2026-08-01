@@ -36,6 +36,10 @@ public interface IEditorHandle
 
     Task SetClipboardTextAsync(string text);
     Task<string?> GetClipboardTextAsync();
+
+    /// <summary>Re-dispatches recorded macro input onto the editor.</summary>
+    void ReplayText(string text);
+    void ReplayKey(Avalonia.Input.Key key, Avalonia.Input.KeyModifiers modifiers);
 }
 
 /// <summary>One open document (one tab), mirroring a Notepad++ buffer.</summary>
