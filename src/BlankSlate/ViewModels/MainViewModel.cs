@@ -213,6 +213,15 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand] private void SetEncoding(TextEncodingKind kind) => SelectedDocument?.SetEncoding(kind);
 
+    // ---- Language menu (per-document) ----
+
+    [RelayCommand]
+    private void SetLanguage(string? languageId)
+    {
+        if (SelectedDocument is { } doc)
+            doc.LanguageId = languageId;
+    }
+
     // ---- View menu: zoom (global) ----
 
     [RelayCommand] private void ZoomIn() => Settings.ZoomIn();

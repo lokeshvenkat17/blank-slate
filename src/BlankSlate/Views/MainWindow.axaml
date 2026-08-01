@@ -108,6 +108,7 @@
         <MenuItem Header="_Restore Default Zoom" Command="{Binding ZoomResetCommand}"
                   InputGesture="{OnPlatform Ctrl+D0, macOS=Cmd+D0}" />
       </MenuItem>
+      <MenuItem Header="_Language" Name="LanguageMenu" />
       <MenuItem Header="Enco_ding">
         <MenuItem Header="UTF-8" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8}" />
         <MenuItem Header="UTF-8-BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8Bom}" />
@@ -126,6 +127,7 @@
           <TextBlock FontSize="12">
             <Run Text="Ln " /><Run Text="{Binding SelectedDocument.CaretLine, FallbackValue=1}" /><Run Text=", Col " /><Run Text="{Binding SelectedDocument.CaretColumn, FallbackValue=1}" />
           </TextBlock>
+          <TextBlock FontSize="12" Text="{Binding SelectedDocument.LanguageName, FallbackValue='Normal Text'}" />
           <TextBlock FontSize="12" Text="{Binding SelectedDocument.EolLabel, FallbackValue='Unix (LF)'}" />
           <TextBlock FontSize="12" Text="{Binding SelectedDocument.EncodingLabel, FallbackValue=UTF-8}" />
         </StackPanel>

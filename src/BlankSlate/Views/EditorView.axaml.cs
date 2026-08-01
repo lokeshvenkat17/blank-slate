@@ -1,10 +1,13 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
+using AvaloniaEdit.TextMate;
+using BlankSlate.Services;
 using BlankSlate.ViewModels;
 using BlankSlate.Views.Editor;
 
@@ -16,6 +19,7 @@ public partial class EditorView : UserControl, IEditorHandle
 
     private readonly BookmarkMargin _bookmarkMargin = new();
     private readonly MarkAllColorizer _markColorizer = new();
+    private readonly TextMate.Installation _textMate;
     private EditorSettings? _settings;
     private DocumentViewModel? _documentVm;
 
@@ -25,6 +29,11 @@ public partial class EditorView : UserControl, IEditorHandle
 
         Editor.TextArea.LeftMargins.Insert(0, _bookmarkMargin);
         Editor.TextArea.TextView.LineTransformers.Add(_markColorizer);
+
+        _textMate = Editor.InstallTextMate(SyntaxService.Registry);
+        ApplyEditorTheme();
+        if (Application.Current is { } app)
+            app.ActualThemeVariantChanged += OnAppThemeChanged;
 
         Editor.TextArea.Caret.PositionChanged += (_, _) => UpdateCaretPosition();
         Editor.PointerWheelChanged += OnPointerWheelChanged;
@@ -37,7 +46,30 @@ public partial class EditorView : UserControl, IEditorHandle
                 _settings.PropertyChanged -= OnSettingsChanged;
             if (_documentVm is not null)
                 _documentVm.PropertyChanged -= OnDocumentPropertyChanged;
+            if (Application.Current is { } application)
+                application.ActualThemeVariantChanged -= OnAppThemeChanged;
         };
+    }
+
+    private void OnAppThemeChanged(object? sender, EventArgs e) => ApplyEditorTheme();
+
+    private void ApplyEditorTheme()
+    {
+        var dark = Application.Current?.ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
+        _textMate.SetTheme(SyntaxService.LoadTheme(dark));
+    }
+
+    private void ApplyGrammar()
+    {
+        try
+        {
+            _textMate.SetGrammar(SyntaxService.GetScope(_documentVm?.LanguageId));
+        }
+        catch (Exception)
+        {
+            // A broken grammar must never take down the editor; fall back to plain text.
+            _textMate.SetGrammar(null);
+        }
     }
 
     private void OnDataContextSwitched()
@@ -56,6 +88,7 @@ public partial class EditorView : UserControl, IEditorHandle
 
         _bookmarkMargin.Bookmarks = vm.Bookmarks;
         _markColorizer.Pattern = vm.MarkPattern;
+        ApplyGrammar();
         Editor.TextArea.TextView.Redraw();
 
         _settings = vm.Settings;
@@ -80,6 +113,10 @@ public partial class EditorView : UserControl, IEditorHandle
         {
             _markColorizer.Pattern = _documentVm?.MarkPattern;
             Editor.TextArea.TextView.Redraw();
+        }
+        else if (e.PropertyName == nameof(DocumentViewModel.LanguageId))
+        {
+            ApplyGrammar();
         }
     }
 

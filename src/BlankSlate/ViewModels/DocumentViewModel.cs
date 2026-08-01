@@ -82,6 +82,14 @@ public partial class DocumentViewModel : ViewModelBase
 
     public BookmarkManager Bookmarks { get; }
 
+    /// <summary>TextMate language id (null = plain text). Auto-detected from the file extension.</summary>
+    [ObservableProperty]
+    public partial string? LanguageId { get; set; }
+
+    public string LanguageName => Services.SyntaxService.GetDisplayNameById(LanguageId) ?? "Normal Text";
+
+    partial void OnLanguageIdChanged(string? value) => OnPropertyChanged(nameof(LanguageName));
+
     /// <summary>Active "Mark All" highlight pattern; EditorView re-applies it when the tab is shown.</summary>
     [ObservableProperty]
     public partial Regex? MarkPattern { get; set; }
@@ -126,6 +134,7 @@ public partial class DocumentViewModel : ViewModelBase
         doc.EolMode = EolModes.Detect(text);
         doc.FilePath = path;
         doc.Title = Path.GetFileName(path);
+        doc.LanguageId = Services.SyntaxService.DetectLanguageId(path);
         doc.IsDirty = false;
         return doc;
     }
@@ -135,6 +144,8 @@ public partial class DocumentViewModel : ViewModelBase
     {
         await File.WriteAllTextAsync(FilePath!, Document.Text, TextEncodings.GetEncoding(EncodingKind));
         Title = Path.GetFileName(FilePath!);
+        // Save As may have given the file a new extension; re-detect unless the user picked a language manually.
+        LanguageId ??= Services.SyntaxService.DetectLanguageId(FilePath!);
         IsDirty = false;
     }
 

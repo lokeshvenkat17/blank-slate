@@ -1,3 +1,4 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
@@ -14,6 +15,39 @@ public partial class MainWindow : Window
         InitializeComponent();
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
+        DataContextChanged += (_, _) => BuildLanguageMenu();
+    }
+
+    /// <summary>Builds Language menu grouped by first letter (Notepad++ style): Normal Text, then A > Asciidoc…, B > Batch…</summary>
+    private void BuildLanguageMenu()
+    {
+        if (ViewModel is null)
+            return;
+        LanguageMenu.Items.Clear();
+
+        var plainText = new MenuItem { Header = "Normal Text" };
+        plainText.Command = ViewModel.SetLanguageCommand;
+        plainText.CommandParameter = null;
+        LanguageMenu.Items.Add(plainText);
+        LanguageMenu.Items.Add(new Separator());
+
+        var byLetter = Services.SyntaxService.Languages
+            .GroupBy(l => char.ToUpperInvariant(Services.SyntaxService.GetDisplayName(l)[0]))
+            .OrderBy(g => g.Key);
+        foreach (var group in byLetter)
+        {
+            var groupItem = new MenuItem { Header = group.Key.ToString() };
+            foreach (var language in group)
+            {
+                groupItem.Items.Add(new MenuItem
+                {
+                    Header = Services.SyntaxService.GetDisplayName(language),
+                    Command = ViewModel.SetLanguageCommand,
+                    CommandParameter = language.Id,
+                });
+            }
+            LanguageMenu.Items.Add(groupItem);
+        }
     }
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
