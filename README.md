@@ -31,4 +31,4 @@ dotnet run --project src/BlankSlate
 | 5 | Sessions, settings persistence, recent files, auto-backup | ✅ |
 | 6 | Power features: macros, split view, function list, document map | ✅ |
 | 7 | Plugin system (.NET plugin API) | 🔜 |
-| 8 | macOS .app packaging, signing & notarization; Windows/Linux builds | |
+| 8 | macOS .app packaging & ad-hoc signing (`scripts/package-macos.sh`) | ✅ |
