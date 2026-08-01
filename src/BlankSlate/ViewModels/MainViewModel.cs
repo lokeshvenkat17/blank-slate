@@ -1,7 +1,12 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using BlankSlate.Models;
 using BlankSlate.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -26,6 +31,16 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial bool IsSearchResultsVisible { get; set; }
+
+    public ObservableCollection<string> RecentFiles { get; } = [];
+
+    private const int MaxRecentFiles = 10;
+
+    /// <summary>When enabled (default, like Notepad++), app exit skips save prompts: dirty buffers are snapshotted and restored next launch.</summary>
+    public bool SessionSnapshotEnabled { get; private set; } = true;
+
+    private DispatcherTimer? _backupTimer;
+    private int _backupIntervalSeconds = 7;
 
     [ObservableProperty]
     public partial DocumentViewModel? SelectedDocument { get; set; }
@@ -102,6 +117,7 @@ public partial class MainViewModel : ViewModelBase
 
         Documents.Add(doc);
         SelectedDocument = doc;
+        AddRecentFile(path);
         UpdateWindowTitle();
     }
 
@@ -139,6 +155,7 @@ public partial class MainViewModel : ViewModelBase
             return false;
         doc.FilePath = path;
         await doc.SaveAsync();
+        AddRecentFile(path);
         UpdateWindowTitle();
         return true;
     }
@@ -364,4 +381,178 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand]
     private void RemoveNonBookmarkedLines() => SelectedDocument?.RemoveNonBookmarkedLines();
+
+    // ---- Persistence: settings, session snapshot, recent files ----
+
+    /// <summary>Loads settings, starts the periodic backup timer. Called once by App at startup.</summary>
+    public void InitializePersistence()
+    {
+        if (PersistenceService.LoadSettings() is { } s)
+        {
+            Settings.WordWrap = s.WordWrap;
+            Settings.ShowWhitespace = s.ShowWhitespace;
+            Settings.ShowEndOfLine = s.ShowEndOfLine;
+            Settings.HighlightCurrentLine = s.HighlightCurrentLine;
+            Settings.FontSize = Math.Clamp(s.FontSize, EditorSettings.MinFontSize, EditorSettings.MaxFontSize);
+            SessionSnapshotEnabled = s.SessionSnapshotEnabled;
+            _backupIntervalSeconds = Math.Max(2, s.BackupIntervalSeconds);
+            foreach (var path in s.RecentFiles.Take(MaxRecentFiles))
+                RecentFiles.Add(path);
+        }
+
+        Settings.PropertyChanged += (_, _) => SaveSettings();
+
+        _backupTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(_backupIntervalSeconds) };
+        _backupTimer.Tick += (_, _) => SaveSession();
+        if (SessionSnapshotEnabled)
+            _backupTimer.Start();
+    }
+
+    private void SaveSettings()
+    {
+        PersistenceService.SaveSettings(new AppSettingsData
+        {
+            WordWrap = Settings.WordWrap,
+            ShowWhitespace = Settings.ShowWhitespace,
+            ShowEndOfLine = Settings.ShowEndOfLine,
+            HighlightCurrentLine = Settings.HighlightCurrentLine,
+            FontSize = Settings.FontSize,
+            RecentFiles = RecentFiles.ToList(),
+            SessionSnapshotEnabled = SessionSnapshotEnabled,
+            BackupIntervalSeconds = _backupIntervalSeconds,
+        });
+    }
+
+    /// <summary>Snapshots all tabs (dirty buffers to backup files) into session.json.</summary>
+    public void SaveSession()
+    {
+        var data = new SessionData
+        {
+            SelectedIndex = SelectedDocument is null ? 0 : Documents.IndexOf(SelectedDocument),
+        };
+        var keep = new HashSet<string>();
+        for (var i = 0; i < Documents.Count; i++)
+        {
+            var doc = Documents[i];
+            var entry = new SessionDocumentData
+            {
+                FilePath = doc.FilePath,
+                Title = doc.Title,
+                LanguageId = doc.LanguageId,
+                EncodingKind = doc.EncodingKind,
+                EolMode = doc.EolMode,
+                CaretLine = doc.CaretLine,
+            };
+            // Snapshot content that isn't safely on disk: dirty buffers and non-empty untitled tabs.
+            if (doc.IsDirty || (doc.FilePath is null && doc.Document.TextLength > 0))
+            {
+                entry.BackupFile = $"buffer-{i}.txt";
+                PersistenceService.WriteBackup(entry.BackupFile, doc.Document.Text);
+                keep.Add(entry.BackupFile);
+            }
+            data.Documents.Add(entry);
+        }
+        PersistenceService.CleanBackups(keep);
+        PersistenceService.SaveSession(data);
+    }
+
+    /// <summary>Restores the previous session's tabs. Called once by App after the window is shown.</summary>
+    public async Task RestoreSessionAsync()
+    {
+        if (!SessionSnapshotEnabled || PersistenceService.LoadSession() is not { Documents.Count: > 0 } session)
+            return;
+
+        var restored = new List<DocumentViewModel>();
+        foreach (var entry in session.Documents)
+        {
+            try
+            {
+                if (await RestoreDocumentAsync(entry) is { } doc)
+                    restored.Add(doc);
+            }
+            catch (Exception ex)
+            {
+                // Skip unrestorable buffers rather than fail launch.
+                Console.Error.WriteLine($"Could not restore '{entry.Title}': {ex.Message}");
+            }
+        }
+        if (restored.Count == 0)
+            return;
+
+        // Bump the untitled counter past restored "new N" titles.
+        foreach (var doc in restored)
+        {
+            if (doc.FilePath is null && Regex.Match(doc.Title, @"^new (\d+)$") is { Success: true } m)
+                DocumentViewModel.EnsureUntitledCounterAtLeast(int.Parse(m.Groups[1].Value));
+        }
+
+        // Replace the pristine startup tab with the restored set.
+        var startupBlank = Documents.Count == 1
+            && Documents[0] is { FilePath: null, IsDirty: false } b && b.Document.TextLength == 0;
+        if (startupBlank)
+            Documents.Clear();
+        foreach (var doc in restored)
+            Documents.Add(doc);
+        SelectedDocument = Documents[Math.Clamp(session.SelectedIndex, 0, Documents.Count - 1)];
+    }
+
+    private async Task<DocumentViewModel?> RestoreDocumentAsync(SessionDocumentData entry)
+    {
+        DocumentViewModel doc;
+        if (entry.BackupFile is not null && PersistenceService.ReadBackup(entry.BackupFile) is { } content)
+        {
+            doc = new DocumentViewModel { Settings = Settings };
+            doc.Document.Text = content;
+            doc.Document.UndoStack.ClearAll();
+            doc.FilePath = entry.FilePath;
+            if (entry.Title is not null)
+                doc.Title = entry.Title;
+            doc.IsDirty = true; // content is not (or may not be) what's on disk
+        }
+        else if (entry.FilePath is not null && File.Exists(entry.FilePath))
+        {
+            doc = await DocumentViewModel.LoadFromFileAsync(entry.FilePath);
+            doc.Settings = Settings;
+            doc.EncodingKind = entry.EncodingKind;
+            doc.EolMode = entry.EolMode;
+        }
+        else
+        {
+            return null;
+        }
+        doc.LanguageId = entry.LanguageId
+            ?? (doc.FilePath is null ? null : SyntaxService.DetectLanguageId(doc.FilePath));
+        doc.PendingCaretLine = entry.CaretLine;
+        return doc;
+    }
+
+    private void AddRecentFile(string path)
+    {
+        RecentFiles.Remove(path);
+        RecentFiles.Insert(0, path);
+        while (RecentFiles.Count > MaxRecentFiles)
+            RecentFiles.RemoveAt(RecentFiles.Count - 1);
+        SaveSettings();
+    }
+
+    [RelayCommand]
+    private async Task OpenRecentFileAsync(string? path)
+    {
+        if (path is null)
+            return;
+        if (!File.Exists(path))
+        {
+            RecentFiles.Remove(path);
+            SaveSettings();
+            return;
+        }
+        await OpenPathAsync(path);
+    }
+
+    [RelayCommand]
+    private void ClearRecentFiles()
+    {
+        RecentFiles.Clear();
+        SaveSettings();
+    }
 }

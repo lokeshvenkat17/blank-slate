@@ -15,7 +15,37 @@ public partial class MainWindow : Window
         InitializeComponent();
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
-        DataContextChanged += (_, _) => BuildLanguageMenu();
+        DataContextChanged += (_, _) =>
+        {
+            BuildLanguageMenu();
+            BuildRecentFilesMenu();
+            if (ViewModel is not null)
+                ViewModel.RecentFiles.CollectionChanged += (_, _) => BuildRecentFilesMenu();
+        };
+    }
+
+    private void BuildRecentFilesMenu()
+    {
+        if (ViewModel is null)
+            return;
+        RecentFilesMenu.Items.Clear();
+        foreach (var path in ViewModel.RecentFiles)
+        {
+            RecentFilesMenu.Items.Add(new MenuItem
+            {
+                Header = path,
+                Command = ViewModel.OpenRecentFileCommand,
+                CommandParameter = path,
+            });
+        }
+        if (ViewModel.RecentFiles.Count > 0)
+            RecentFilesMenu.Items.Add(new Separator());
+        RecentFilesMenu.Items.Add(new MenuItem
+        {
+            Header = "Empty Recent Files List",
+            Command = ViewModel.ClearRecentFilesCommand,
+            IsEnabled = ViewModel.RecentFiles.Count > 0,
+        });
     }
 
     /// <summary>Builds Language menu grouped by first letter (Notepad++ style): Normal Text, then A > Asciidoc…, B > Batch…</summary>
@@ -81,6 +111,14 @@ public partial class MainWindow : Window
         base.OnClosing(e);
         if (_closeConfirmed || ViewModel is null)
             return;
+
+        // Session-snapshot mode (default): no prompts — dirty buffers are
+        // snapshotted and silently restored next launch, like Notepad++.
+        if (ViewModel.SessionSnapshotEnabled)
+        {
+            ViewModel.SaveSession();
+            return;
+        }
 
         // Cancel, run the async unsaved-changes prompts, then re-close for real.
         e.Cancel = true;

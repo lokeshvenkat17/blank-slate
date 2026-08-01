@@ -104,6 +104,13 @@ public partial class DocumentViewModel : ViewModelBase
         Document.TextChanged += OnTextChanged;
     }
 
+    /// <summary>Keeps "new N" numbering unique after restoring session tabs named by a previous run.</summary>
+    public static void EnsureUntitledCounterAtLeast(int value)
+    {
+        if (_untitledCounter < value)
+            _untitledCounter = value;
+    }
+
     /// <summary>Jumps to a line now if an editor is attached, or defers until one is.</summary>
     public void RequestGoToLine(int line)
     {

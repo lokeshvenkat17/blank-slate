@@ -25,6 +25,7 @@
                   HotKey="{OnPlatform Ctrl+N, macOS=Cmd+N}" InputGesture="{OnPlatform Ctrl+N, macOS=Cmd+N}" />
         <MenuItem Header="_Open…" Command="{Binding OpenFileCommand}"
                   HotKey="{OnPlatform Ctrl+O, macOS=Cmd+O}" InputGesture="{OnPlatform Ctrl+O, macOS=Cmd+O}" />
+        <MenuItem Header="Open _Recent" Name="RecentFilesMenu" />
         <Separator />
         <MenuItem Header="_Save" Command="{Binding SaveCommand}"
                   HotKey="{OnPlatform Ctrl+S, macOS=Cmd+S}" InputGesture="{OnPlatform Ctrl+S, macOS=Cmd+S}" />

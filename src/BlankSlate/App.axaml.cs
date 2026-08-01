@@ -19,8 +19,13 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var mainWindow = new MainWindow();
-            mainWindow.DataContext = new MainViewModel(new DialogService(mainWindow));
+            var viewModel = new MainViewModel(new DialogService(mainWindow));
+            mainWindow.DataContext = viewModel;
             desktop.MainWindow = mainWindow;
+            viewModel.InitializePersistence();
+            _ = viewModel.RestoreSessionAsync().ContinueWith(
+                t => System.Console.Error.WriteLine($"Session restore failed: {t.Exception}"),
+                System.Threading.Tasks.TaskContinuationOptions.OnlyOnFaulted);
         }
 
         base.OnFrameworkInitializationCompleted();
