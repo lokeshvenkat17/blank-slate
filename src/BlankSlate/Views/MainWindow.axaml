@@ -17,6 +17,20 @@
     <vm:MainViewModel />
   </Design.DataContext>
 
+  <!-- Compact Notepad++-style file tabs (Fluent default is oversized pivot headers) -->
+  <Window.Styles>
+    <Style Selector="TabControl#DocumentTabs > TabItem">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="Padding" Value="12,5" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TabControl#DocumentTabs > TabItem:selected">
+      <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
+    </Style>
+  </Window.Styles>
+
   <DockPanel>
 
     <!-- ============ Menu bar ============ -->
@@ -33,6 +47,7 @@
         <MenuItem Header="Save _As…" Command="{Binding SaveAsCommand}"
                   HotKey="{OnPlatform Ctrl+Shift+S, macOS=Cmd+Shift+S}" InputGesture="{OnPlatform Ctrl+Shift+S, macOS=Cmd+Shift+S}" />
         <MenuItem Header="Save A_ll" Command="{Binding SaveAllCommand}" />
+        <MenuItem Header="Rena_me…" Command="{Binding RenameCommand}" />
         <Separator />
         <MenuItem Header="_Close Tab" Command="{Binding CloseDocumentCommand}"
                   HotKey="{OnPlatform Ctrl+W, macOS=Cmd+W}" InputGesture="{OnPlatform Ctrl+W, macOS=Cmd+W}" />
@@ -266,7 +281,7 @@
     <!-- ============ Document tabs + search results ============ -->
     <Grid RowDefinitions="*,Auto,Auto">
 
-      <TabControl Grid.Row="0"
+      <TabControl Grid.Row="0" Name="DocumentTabs"
                   ItemsSource="{Binding Documents}"
                   SelectedItem="{Binding SelectedDocument}"
                   Padding="0">

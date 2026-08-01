@@ -184,6 +184,43 @@ public partial class MainViewModel : ViewModelBase
         return true;
     }
 
+    /// <summary>File &gt; Rename: renames the file on disk (saved docs) or retitles the tab (untitled docs).</summary>
+    [RelayCommand]
+    private async Task RenameAsync()
+    {
+        if (SelectedDocument is not { } doc || _dialogs is null)
+            return;
+        var newName = await _dialogs.ShowTextInputAsync("Rename", "New name:", doc.Title);
+        if (newName is null || newName == doc.Title || newName.Contains(Path.DirectorySeparatorChar))
+            return;
+
+        if (doc.FilePath is { } oldPath)
+        {
+            var newPath = Path.Combine(Path.GetDirectoryName(oldPath)!, newName);
+            if (File.Exists(newPath))
+                return; // don't clobber an existing file
+            try
+            {
+                if (File.Exists(oldPath))
+                    File.Move(oldPath, newPath);
+            }
+            catch (IOException)
+            {
+                return;
+            }
+            RecentFiles.Remove(oldPath);
+            doc.FilePath = newPath;
+            doc.Title = newName;
+            doc.LanguageId = SyntaxService.DetectLanguageId(newPath);
+            AddRecentFile(newPath);
+        }
+        else
+        {
+            doc.Title = newName;
+        }
+        UpdateWindowTitle();
+    }
+
     [RelayCommand]
     private async Task CloseDocumentAsync(DocumentViewModel? doc)
     {
