@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Keep in sync with packaging/Info.plist CFBundleShortVersionString -->
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

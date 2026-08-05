@@ -223,15 +223,15 @@
         <MenuItem Header="Save Current Recorded Macro…" Command="{Binding SaveCurrentMacroCommand}" />
         <Separator Name="MacroMenuSeparator" />
       </MenuItem>
-      <MenuItem Header="_Help">
-        <MenuItem Header="About BlankSlate" Click="OnAboutClick" />
-      </MenuItem>
       <MenuItem Header="Enco_ding">
         <MenuItem Header="UTF-8" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8}" />
         <MenuItem Header="UTF-8-BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8Bom}" />
         <MenuItem Header="UTF-16 LE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16LeBom}" />
         <MenuItem Header="UTF-16 BE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16BeBom}" />
         <MenuItem Header="ANSI" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Ansi}" />
+      </MenuItem>
+      <MenuItem Header="_Help">
+        <MenuItem Header="About BlankSlate" Click="OnAboutClick" />
       </MenuItem>
     </Menu>
 

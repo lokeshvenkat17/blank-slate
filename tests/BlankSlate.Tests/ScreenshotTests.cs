@@ -22,10 +22,15 @@ public class ScreenshotTests
 
     private static void Capture(Window window, string name)
     {
-        window.UpdateLayout();
-        Dispatcher.UIThread.RunJobs();
-        window.UpdateLayout();
-        Dispatcher.UIThread.RunJobs();
+        // TextMate tokenizes asynchronously; pump repeatedly so colorization lands
+        // before the frame is captured.
+        for (var i = 0; i < 40; i++)
+        {
+            window.UpdateLayout();
+            Dispatcher.UIThread.RunJobs();
+            System.Threading.Thread.Sleep(25);
+            Dispatcher.UIThread.RunJobs();
+        }
 
         var frame = window.CaptureRenderedFrame();
         Assert.NotNull(frame);
@@ -86,5 +91,13 @@ public class ScreenshotTests
             }
             """;
         Capture(window, "03-csharp");
+    }
+
+    [AvaloniaFact]
+    public void Capture_AboutDialog()
+    {
+        var about = new AboutWindow();
+        about.Show();
+        Capture(about, "04-about");
     }
 }
