@@ -41,10 +41,13 @@ public partial class MainWindow : Window
             BuildLanguageMenu();
             BuildRecentFilesMenu();
             BuildMacroMenu();
+            BuildPluginsMenu();
             if (ViewModel is not null)
             {
                 ViewModel.RecentFiles.CollectionChanged += (_, _) => BuildRecentFilesMenu();
                 ViewModel.SavedMacros.CollectionChanged += (_, _) => BuildMacroMenu();
+                if (ViewModel.PluginHost is { } host)
+                    host.CommandsChanged += (_, _) => BuildPluginsMenu();
             }
         };
     }
@@ -95,6 +98,41 @@ public partial class MainWindow : Window
 
     private void OnAboutClick(object? sender, RoutedEventArgs e)
         => (Avalonia.Application.Current as App)?.ShowAboutWindow();
+
+    private void OnPluginManagerClick(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null)
+            return;
+        new PluginManagerWindow { DataContext = ViewModel }.ShowDialog(this);
+    }
+
+    /// <summary>Groups plugin-contributed commands into one submenu per plugin.</summary>
+    private void BuildPluginsMenu()
+    {
+        if (ViewModel is null)
+            return;
+        var separatorIndex = PluginsMenu.Items.IndexOf(PluginsMenuSeparator);
+        for (var i = PluginsMenu.Items.Count - 1; i > separatorIndex; i--)
+            PluginsMenu.Items.RemoveAt(i);
+
+        foreach (var group in ViewModel.PluginCommands.GroupBy(c => c.PluginName))
+        {
+            var groupItem = new MenuItem { Header = group.Key };
+            foreach (var command in group)
+            {
+                groupItem.Items.Add(new MenuItem
+                {
+                    Header = command.Title,
+                    Command = ViewModel.RunPluginCommandCommand,
+                    CommandParameter = command,
+                });
+            }
+            PluginsMenu.Items.Add(groupItem);
+        }
+
+        if (ViewModel.PluginCommands.Count == 0)
+            PluginsMenu.Items.Add(new MenuItem { Header = "(no plugins installed)", IsEnabled = false });
+    }
 
     /// <summary>Double-click a tab header to rename the document (file on disk, or tab title when untitled).</summary>
     private async void OnTabHeaderDoubleTapped(object? sender, TappedEventArgs e)

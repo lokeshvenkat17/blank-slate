@@ -14,5 +14,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/BlankSlate/BlankSlate.csproj" />
+    <!-- Build the sample plugin so plugin-loading tests have a real assembly to load,
+         but keep it out of the test's own dependency graph (it must load via its own ALC). -->
+    <ProjectReference Include="../../samples/TextToolsPlugin/TextToolsPlugin.csproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

@@ -230,6 +230,11 @@
         <MenuItem Header="UTF-16 BE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16BeBom}" />
         <MenuItem Header="ANSI" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Ansi}" />
       </MenuItem>
+      <MenuItem Header="_Plugins" Name="PluginsMenu">
+        <MenuItem Header="Plugin Manager…" Click="OnPluginManagerClick" />
+        <MenuItem Header="Open Plugins Folder…" Command="{Binding OpenPluginsFolderCommand}" />
+        <Separator Name="PluginsMenuSeparator" />
+      </MenuItem>
       <MenuItem Header="_Help">
         <MenuItem Header="About BlankSlate" Click="OnAboutClick" />
       </MenuItem>

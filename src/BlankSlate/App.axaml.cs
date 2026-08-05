@@ -30,9 +30,12 @@ public partial class App : Application
         {
             var mainWindow = new MainWindow();
             _viewModel = new MainViewModel(new DialogService(mainWindow));
+            // Settings (which plugins are disabled) and plugin loading must both happen
+            // before the DataContext is set, so the Plugins menu builds fully populated.
+            _viewModel.InitializePersistence();
+            _viewModel.LoadPlugins();
             mainWindow.DataContext = _viewModel;
             desktop.MainWindow = mainWindow;
-            _viewModel.InitializePersistence();
             _ = RunStartupAsync(_viewModel, desktop.Args);
         }
 

@@ -60,6 +60,15 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<Macro> SavedMacros { get; } = [];
 
+    // ---- Phase 7: plugins ----
+
+    public PluginHost? PluginHost { get; private set; }
+
+    public ObservableCollection<PluginEntry> Plugins { get; } = [];
+
+    /// <summary>Folder names of plugins the user disabled; persisted in settings.json.</summary>
+    private readonly HashSet<string> _disabledPlugins = new(StringComparer.OrdinalIgnoreCase);
+
     private readonly List<MacroStep> _recordingSteps = [];
     private Macro? _lastMacro;
     private DispatcherTimer? _functionListTimer;
@@ -89,6 +98,8 @@ public partial class MainViewModel : ViewModelBase
             newValue.PropertyChanged += OnSelectedDocumentPropertyChanged;
         UpdateWindowTitle();
         WatchFunctionListDocument(newValue);
+        if (newValue is not null)
+            PluginHost?.RaiseActiveDocumentChanged(newValue);
     }
 
     private void OnSelectedDocumentPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -143,6 +154,7 @@ public partial class MainViewModel : ViewModelBase
         SelectedDocument = doc;
         AddRecentFile(path);
         UpdateWindowTitle();
+        PluginHost?.RaiseDocumentOpened(doc);
     }
 
     [RelayCommand]
@@ -167,6 +179,7 @@ public partial class MainViewModel : ViewModelBase
             return await SaveDocumentAsAsync(doc);
         await doc.SaveAsync();
         UpdateWindowTitle();
+        PluginHost?.RaiseDocumentSaved(doc);
         return true;
     }
 
@@ -490,6 +503,8 @@ public partial class MainViewModel : ViewModelBase
             _backupIntervalSeconds = Math.Max(2, s.BackupIntervalSeconds);
             foreach (var path in s.RecentFiles.Take(MaxRecentFiles))
                 RecentFiles.Add(path);
+            foreach (var name in s.DisabledPlugins)
+                _disabledPlugins.Add(name);
         }
 
         Settings.PropertyChanged += (_, _) => SaveSettings();
@@ -513,6 +528,7 @@ public partial class MainViewModel : ViewModelBase
             RecentFiles = RecentFiles.ToList(),
             SessionSnapshotEnabled = SessionSnapshotEnabled,
             BackupIntervalSeconds = _backupIntervalSeconds,
+            DisabledPlugins = _disabledPlugins.ToList(),
         });
     }
 
@@ -790,6 +806,78 @@ public partial class MainViewModel : ViewModelBase
                 Name = data.Name,
                 Steps = data.Steps.Select(s => s.ToStep()).ToList(),
             });
+        }
+    }
+
+    // ---- Plugins (Phase 7) ----
+
+    /// <summary>
+    /// Discovers, loads and initializes plugins. Called once at startup after settings
+    /// are read. A failing plugin is recorded and skipped, never fatal.
+    /// </summary>
+    public void LoadPlugins() => LoadPluginsFrom(PersistenceService.PluginsDir);
+
+    /// <summary>Loads plugins from a specific folder. Separate from <see cref="LoadPlugins"/> so tests can stage a folder.</summary>
+    public void LoadPluginsFrom(string pluginsDir)
+    {
+        PluginHost ??= new PluginHost(this);
+        Plugins.Clear();
+        PluginHost.Commands.Clear();
+
+        foreach (var entry in PluginLoader.Discover(pluginsDir))
+        {
+            entry.IsEnabled = !_disabledPlugins.Contains(entry.Name);
+            if (entry.IsEnabled)
+            {
+                PluginLoader.Load(entry);
+                if (entry.Instance is not null)
+                {
+                    PluginHost.CurrentPluginName = entry.Instance.Name is { Length: > 0 } n ? n : entry.Name;
+                    PluginLoader.Initialize(entry, PluginHost);
+                }
+            }
+            Plugins.Add(entry);
+        }
+        OnPropertyChanged(nameof(PluginCommands));
+    }
+
+    public IReadOnlyList<PluginCommand> PluginCommands => PluginHost?.Commands ?? [];
+
+    [RelayCommand]
+    private void RunPluginCommand(PluginCommand? command)
+    {
+        if (command is not null)
+            PluginHost?.Invoke(command);
+    }
+
+    /// <summary>Turns a plugin on/off; takes effect after a restart, like Notepad++.</summary>
+    public void SetPluginEnabled(PluginEntry entry, bool enabled)
+    {
+        entry.IsEnabled = enabled;
+        if (enabled)
+            _disabledPlugins.Remove(entry.Name);
+        else
+            _disabledPlugins.Add(entry.Name);
+        SaveSettings();
+    }
+
+    public void ShowPluginMessage(string title, string message) => _dialogs?.ShowMessage(title, message);
+
+    [RelayCommand]
+    private void OpenPluginsFolder()
+    {
+        try
+        {
+            Directory.CreateDirectory(PersistenceService.PluginsDir);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = PersistenceService.PluginsDir,
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex)
+        {
+            ShowPluginMessage("Plugins", $"Could not open the plugins folder.\n\n{ex.Message}");
         }
     }
 

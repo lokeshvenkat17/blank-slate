@@ -13,6 +13,9 @@ public sealed class AppSettingsData
     public List<string> RecentFiles { get; set; } = [];
     public bool SessionSnapshotEnabled { get; set; } = true;
     public int BackupIntervalSeconds { get; set; } = 7;
+
+    /// <summary>Plugin folder names the user switched off in the Plugin Manager.</summary>
+    public List<string> DisabledPlugins { get; set; } = [];
 }
 
 /// <summary>One open tab as stored in session.json.</summary>

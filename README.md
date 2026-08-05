@@ -20,6 +20,16 @@ Notepad++ is Windows-only. BlankSlate aims to bring the full Notepad++ feature s
 dotnet run --project src/BlankSlate
 ```
 
+## Tests
+
+Headless Avalonia tests cover the editor surface, plugin system, and text operations,
+and render real windows to PNGs so the UI can be inspected rather than assumed:
+
+```sh
+dotnet test
+BLANKSLATE_SHOT_DIR=/tmp/shots dotnet test --filter FullyQualifiedName~ScreenshotTests
+```
+
 ## Roadmap
 
 | Phase | Scope | Status |
@@ -30,5 +40,5 @@ dotnet run --project src/BlankSlate
 | 4 | Syntax highlighting for 64 languages via TextMate grammars, themes | ✅ |
 | 5 | Sessions, settings persistence, recent files, auto-backup | ✅ |
 | 6 | Power features: macros, split view, function list, document map | ✅ |
-| 7 | Plugin system (.NET plugin API) | 🔜 |
+| 7 | Plugin system (.NET plugin API) — see [docs/writing-plugins.md](docs/writing-plugins.md) | ✅ |
 | 8 | macOS .app packaging & ad-hoc signing (`scripts/package-macos.sh`) | ✅ |

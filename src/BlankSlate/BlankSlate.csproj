@@ -27,4 +27,13 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="TextMateSharp.Grammars" Version="2.0.4" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlankSlate.PluginApi\BlankSlate.PluginApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tests exercise internal host plumbing (event pumps, adapters) without widening the public API. -->
+    <InternalsVisibleTo Include="BlankSlate.Tests" />
+  </ItemGroup>
 </Project>

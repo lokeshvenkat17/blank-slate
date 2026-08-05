@@ -22,6 +22,9 @@ public interface IDialogService
 
     /// <summary>Generic single-field text prompt. Returns null on cancel.</summary>
     Task<string?> ShowTextInputAsync(string title, string label, string initial = "");
+
+    /// <summary>Informational dialog with an OK button.</summary>
+    void ShowMessage(string title, string message);
 }
 
 /// <summary>Window-backed implementation using Avalonia's StorageProvider.</summary>
@@ -42,6 +45,41 @@ public sealed class DialogService(Window owner) : IDialogService
             _findReplaceWindow.Activate();
         }
         _findReplaceWindow.SelectTab(tabIndex);
+    }
+
+    public void ShowMessage(string title, string message)
+    {
+        var ok = new Button { Content = "OK", IsDefault = true, IsCancel = true, MinWidth = 90 };
+        var dialog = new Window
+        {
+            Title = title,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            CanResize = false,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ShowInTaskbar = false,
+            Content = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(24),
+                Spacing = 16,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = message,
+                        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                        MaxWidth = 420,
+                    },
+                    new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Children = { ok },
+                    },
+                },
+            },
+        };
+        ok.Click += (_, _) => dialog.Close();
+        dialog.ShowDialog(owner);
     }
 
     public async Task<string?> ShowTextInputAsync(string title, string label, string initial = "")

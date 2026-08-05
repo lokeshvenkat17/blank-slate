@@ -26,6 +26,9 @@ public static class PersistenceService
 
     public static string BackupDir { get; } = Path.Combine(AppDataDir, "backup");
 
+    /// <summary>Where third-party plugins live: &lt;PluginsDir&gt;/&lt;PluginName&gt;/&lt;PluginName&gt;.dll</summary>
+    public static string PluginsDir { get; } = Path.Combine(AppDataDir, "plugins");
+
     private static string SettingsPath => Path.Combine(AppDataDir, "settings.json");
     private static string SessionPath => Path.Combine(AppDataDir, "session.json");
 

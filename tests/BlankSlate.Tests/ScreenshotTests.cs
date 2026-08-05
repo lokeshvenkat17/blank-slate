@@ -100,4 +100,16 @@ public class ScreenshotTests
         about.Show();
         Capture(about, "04-about");
     }
+
+    [AvaloniaFact]
+    public void Capture_PluginManager_WithLoadedPlugin()
+    {
+        var vm = new MainViewModel(null);
+        // Point the loader at the sample plugin staged in a temp folder.
+        vm.LoadPluginsFrom(PluginTestSupport.StageSamplePlugin());
+
+        var window = new PluginManagerWindow { Width = 640, Height = 440, DataContext = vm };
+        window.Show();
+        Capture(window, "05-plugin-manager");
+    }
 }
