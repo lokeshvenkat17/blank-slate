@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -27,6 +28,14 @@ public partial class MainWindow : Window
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(KeyDownEvent, OnRecordKeyDown, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnRecordTextInput, RoutingStrategies.Tunnel);
+        if (Services.LayoutDiagnostics.IsEnabled)
+        {
+            // Dump after layout has settled so bounds are meaningful.
+            Opened += (_, _) => Avalonia.Threading.DispatcherTimer.RunOnce(
+                () => Services.LayoutDiagnostics.DumpVisualTree(this, "MainWindow after show"),
+                TimeSpan.FromSeconds(2));
+        }
+
         DataContextChanged += (_, _) =>
         {
             BuildLanguageMenu();

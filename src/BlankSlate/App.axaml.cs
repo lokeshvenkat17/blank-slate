@@ -16,17 +16,18 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        // Both must happen before the windowing platform builds the macOS application
+        // menu — setting them in OnFrameworkInitializationCompleted is too late and
+        // leaves the menu bar reading "Avalonia Application".
+        Name = "BlankSlate";
         AvaloniaXamlLoader.Load(this);
+        SetupMacAppMenu();
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
-        // Shown in the macOS application menu (otherwise "Avalonia Application").
-        Name = "BlankSlate";
-
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            SetupMacAppMenu();
             var mainWindow = new MainWindow();
             _viewModel = new MainViewModel(new DialogService(mainWindow));
             mainWindow.DataContext = _viewModel;
@@ -62,7 +63,10 @@ public partial class App : Application
         }
     }
 
-    /// <summary>Native macOS app menu: About BlankSlate (Quit/Hide etc. come from the default menu).</summary>
+    /// <summary>
+    /// Native macOS app menu. Supplying our own About item replaces Avalonia's default
+    /// "About Avalonia" entry; Services/Hide/Quit still come from the system menu.
+    /// </summary>
     private void SetupMacAppMenu()
     {
         var about = new Avalonia.Controls.NativeMenuItem("About BlankSlate");

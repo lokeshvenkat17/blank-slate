@@ -11,5 +11,8 @@
 
     <Application.Styles>
         <FluentTheme />
+        <!-- AvaloniaEdit ships its own control theme. Without it TextEditor gets no
+             template and renders nothing at all — no text, no line numbers. -->
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
     </Application.Styles>
 </Application>

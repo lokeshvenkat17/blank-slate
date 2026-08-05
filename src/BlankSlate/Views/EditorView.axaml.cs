@@ -19,7 +19,8 @@ public partial class EditorView : UserControl, IEditorHandle
 
     private readonly BookmarkMargin _bookmarkMargin = new();
     private readonly MarkAllColorizer _markColorizer = new();
-    private readonly TextMate.Installation _textMate;
+    private TextMate.Installation _textMate;
+    private string? _appliedScope;
     private EditorSettings? _settings;
     private DocumentViewModel? _documentVm;
 
@@ -77,17 +78,37 @@ public partial class EditorView : UserControl, IEditorHandle
             : Color.FromArgb(0x60, 0xAD, 0xD6, 0xFF));
     }
 
+    /// <summary>
+    /// Applies the document's grammar. TextMateSharp throws on a null scope, so plain-text
+    /// documents (no language, e.g. untitled tabs and .txt files) must never reach SetGrammar —
+    /// highlighting is cleared by reinstalling instead.
+    /// </summary>
     private void ApplyGrammar()
     {
+        var scope = SyntaxService.GetScope(_documentVm?.LanguageId);
+        if (scope == _appliedScope)
+            return;
         try
         {
-            _textMate.SetGrammar(SyntaxService.GetScope(_documentVm?.LanguageId));
+            if (scope is not null)
+                _textMate.SetGrammar(scope);
+            else if (_appliedScope is not null)
+                ReinstallTextMate();
+            _appliedScope = scope;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // A broken grammar must never take down the editor; fall back to plain text.
-            _textMate.SetGrammar(null);
+            // A broken grammar must never take down the editor; stay on plain text.
+            Console.Error.WriteLine($"Grammar '{scope}' failed to load: {ex.Message}");
+            _appliedScope = null;
         }
+    }
+
+    private void ReinstallTextMate()
+    {
+        _textMate.Dispose();
+        _textMate = Editor.InstallTextMate(SyntaxService.Registry);
+        ApplyEditorTheme();
     }
 
     /// <summary>False for the split-view clone: it shares the document but must not claim the
