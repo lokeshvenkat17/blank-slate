@@ -87,6 +87,12 @@ public partial class DocumentViewModel : ViewModelBase
 
     public BookmarkManager Bookmarks { get; }
 
+    /// <summary>Five Notepad++-style token highlight sets.</summary>
+    public StyleMarkSet StyleMarks { get; }
+
+    /// <summary>Per-line edited/saved markers for the change-history gutter.</summary>
+    public ChangeHistory ChangeHistory { get; }
+
     /// <summary>TextMate language id (null = plain text). Auto-detected from the file extension.</summary>
     [ObservableProperty]
     public partial string? LanguageId { get; set; }
@@ -106,6 +112,8 @@ public partial class DocumentViewModel : ViewModelBase
     {
         Title = $"new {++_untitledCounter}";
         Bookmarks = new BookmarkManager(Document);
+        StyleMarks = new StyleMarkSet(Document);
+        ChangeHistory = new ChangeHistory(Document);
         Document.TextChanged += OnTextChanged;
     }
 
@@ -138,7 +146,8 @@ public partial class DocumentViewModel : ViewModelBase
         var (kind, _, text) = TextEncodings.DetectAndDecode(bytes);
 
         doc._suppressDirty = true;
-        doc.Document.Text = text;
+        using (doc.ChangeHistory.SuppressTracking())
+            doc.Document.Text = text;
         doc._suppressDirty = false;
         doc.Document.UndoStack.ClearAll();
 
@@ -159,6 +168,7 @@ public partial class DocumentViewModel : ViewModelBase
         // Save As may have given the file a new extension; re-detect unless the user picked a language manually.
         LanguageId ??= Services.SyntaxService.DetectLanguageId(FilePath!);
         IsDirty = false;
+        ChangeHistory.MarkSaved();
     }
 
     /// <summary>"Encode in X": reinterprets how the in-memory text will be written on next save, like Notepad++'s Encoding menu.</summary>

@@ -178,6 +178,65 @@
                   HotKey="{OnPlatform Ctrl+G, macOS=Cmd+L}" InputGesture="{OnPlatform Ctrl+G, macOS=Cmd+L}" />
         <MenuItem Header="Mar_k…" Command="{Binding ShowMarkCommand}" />
         <Separator />
+        <Separator />
+        <MenuItem Header="Style All Occurrences of Token">
+          <MenuItem Header="Using 1st Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="0" />
+          <MenuItem Header="Using 2nd Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="1" />
+          <MenuItem Header="Using 3rd Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="2" />
+          <MenuItem Header="Using 4th Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="3" />
+          <MenuItem Header="Using 5th Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="4" />
+        </MenuItem>
+        <MenuItem Header="Style One Token">
+          <MenuItem Header="Using 1st Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="0" />
+          <MenuItem Header="Using 2nd Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="1" />
+          <MenuItem Header="Using 3rd Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="2" />
+          <MenuItem Header="Using 4th Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="3" />
+          <MenuItem Header="Using 5th Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="4" />
+        </MenuItem>
+        <MenuItem Header="Clear Style">
+          <MenuItem Header="Clear 1st Style" Command="{Binding ClearStyleCommand}" CommandParameter="0" />
+          <MenuItem Header="Clear 2nd Style" Command="{Binding ClearStyleCommand}" CommandParameter="1" />
+          <MenuItem Header="Clear 3rd Style" Command="{Binding ClearStyleCommand}" CommandParameter="2" />
+          <MenuItem Header="Clear 4th Style" Command="{Binding ClearStyleCommand}" CommandParameter="3" />
+          <MenuItem Header="Clear 5th Style" Command="{Binding ClearStyleCommand}" CommandParameter="4" />
+          <Separator />
+          <MenuItem Header="Clear All Styles" Command="{Binding ClearAllStylesCommand}" />
+        </MenuItem>
+        <MenuItem Header="Jump Up">
+          <MenuItem Header="1st Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="0" />
+          <MenuItem Header="2nd Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="1" />
+          <MenuItem Header="3rd Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="2" />
+          <MenuItem Header="4th Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="3" />
+          <MenuItem Header="5th Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="4" />
+        </MenuItem>
+        <MenuItem Header="Jump Down">
+          <MenuItem Header="1st Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="0" />
+          <MenuItem Header="2nd Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="1" />
+          <MenuItem Header="3rd Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="2" />
+          <MenuItem Header="4th Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="3" />
+          <MenuItem Header="5th Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="4" />
+        </MenuItem>
+        <MenuItem Header="Copy Styled Text">
+          <MenuItem Header="1st Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="0" />
+          <MenuItem Header="2nd Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="1" />
+          <MenuItem Header="3rd Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="2" />
+          <MenuItem Header="4th Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="3" />
+          <MenuItem Header="5th Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="4" />
+          <Separator />
+          <MenuItem Header="All Styles" Command="{Binding CopyStyledTextCommand}" CommandParameter="-1" />
+        </MenuItem>
+        <Separator />
+        <MenuItem Header="Change History">
+          <MenuItem Header="Go to Next Change" Command="{Binding GoToNextChangeCommand}" />
+          <MenuItem Header="Go to Previous Change" Command="{Binding GoToPreviousChangeCommand}" />
+          <MenuItem Header="Clear Change History" Command="{Binding ClearChangeHistoryCommand}" />
+        </MenuItem>
+        <MenuItem Header="_Incremental Search" Command="{Binding ShowIncrementalSearchCommand}"
+                  HotKey="{OnPlatform Ctrl+Alt+I, macOS=Cmd+Alt+I}" InputGesture="{OnPlatform Ctrl+Alt+I, macOS=Cmd+Alt+I}" />
+        <MenuItem Header="Go to Matching Brace" Command="{Binding GoToMatchingBraceCommand}"
+                  HotKey="{OnPlatform Ctrl+B, macOS=Cmd+B}" InputGesture="{OnPlatform Ctrl+B, macOS=Cmd+B}" />
+        <MenuItem Header="Select All In-between Braces" Command="{Binding SelectBetweenBracesCommand}"
+                  HotKey="{OnPlatform Ctrl+Alt+B, macOS=Cmd+Alt+B}" InputGesture="{OnPlatform Ctrl+Alt+B, macOS=Cmd+Alt+B}" />
         <MenuItem Header="_Bookmark">
           <MenuItem Header="Toggle Bookmark" Command="{Binding ToggleBookmarkCommand}"
                     HotKey="{OnPlatform Ctrl+F2, macOS=Cmd+F2}" InputGesture="{OnPlatform Ctrl+F2, macOS=Cmd+F2}" />
@@ -239,6 +298,25 @@
         <MenuItem Header="About BlankSlate" Click="OnAboutClick" />
       </MenuItem>
     </Menu>
+
+    <!-- ============ Incremental search bar ============ -->
+    <Border DockPanel.Dock="Bottom" Padding="8,5" IsVisible="{Binding IsIncrementalSearchVisible}"
+            Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Text="Find:" VerticalAlignment="Center" FontSize="12" />
+        <TextBox Name="IncrementalSearchBox" Width="260" FontSize="12" Padding="6,2"
+                 Text="{Binding IncrementalSearchText}"
+                 KeyDown="OnIncrementalSearchKeyDown" />
+        <Button Content="▲" FontSize="10" Padding="7,2" Command="{Binding IncrementalSearchPreviousCommand}"
+                ToolTip.Tip="Previous match (Shift+Enter)" />
+        <Button Content="▼" FontSize="10" Padding="7,2" Command="{Binding IncrementalSearchNextCommand}"
+                ToolTip.Tip="Next match (Enter)" />
+        <TextBlock Text="{Binding IncrementalSearchStatus}" VerticalAlignment="Center"
+                   FontSize="12" Foreground="#D13438" />
+        <Button Content="✕" FontSize="10" Padding="7,2" Background="Transparent" BorderThickness="0"
+                Command="{Binding HideIncrementalSearchCommand}" ToolTip.Tip="Close (Esc)" />
+      </StackPanel>
+    </Border>
 
     <!-- ============ Status bar ============ -->
     <Border DockPanel.Dock="Bottom"

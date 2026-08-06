@@ -96,6 +96,27 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>Enter / Shift+Enter step through matches; Esc closes the bar.</summary>
+    private void OnIncrementalSearchKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (ViewModel is null)
+            return;
+        switch (e.Key)
+        {
+            case Key.Enter or Key.Return:
+                if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+                    ViewModel.IncrementalSearchPreviousCommand.Execute(null);
+                else
+                    ViewModel.IncrementalSearchNextCommand.Execute(null);
+                e.Handled = true;
+                break;
+            case Key.Escape:
+                ViewModel.HideIncrementalSearchCommand.Execute(null);
+                e.Handled = true;
+                break;
+        }
+    }
+
     private void OnAboutClick(object? sender, RoutedEventArgs e)
         => (Avalonia.Application.Current as App)?.ShowAboutWindow();
 

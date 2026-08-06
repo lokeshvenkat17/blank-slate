@@ -168,4 +168,48 @@ public class ScreenshotTests
             """;
         Capture(window, "07-haskell-grammar");
     }
+
+    [AvaloniaFact]
+    public void Capture_StyleMarksAndChangeHistory()
+    {
+        var window = new MainWindow { Width = 1000, Height = 650 };
+        var vm = new MainViewModel(null);
+        window.DataContext = vm;
+        window.Show();
+        window.UpdateLayout();
+        Dispatcher.UIThread.RunJobs();
+
+        var doc = vm.SelectedDocument!;
+        doc.LanguageId = "python";
+        using (doc.ChangeHistory.SuppressTracking())
+        {
+            doc.Document.Text = """
+                # Style marks: each style paints a different colour
+                def render(widget, theme):
+                    widget.apply(theme)
+                    return widget
+
+                def render_all(widgets, theme):
+                    for widget in widgets:
+                        render(widget, theme)
+                """;
+        }
+
+        // Five token styles, as Search > Style All Occurrences of Token would apply them.
+        doc.StyleMarks.MarkAll("widget", 0);
+        doc.StyleMarks.MarkAll("theme", 1);
+        doc.StyleMarks.MarkAll("render", 2);
+        doc.StyleMarks.MarkAll("widgets", 3);
+        doc.StyleMarks.MarkAll("def", 4);
+
+        // Edit two lines so the change-history gutter shows modified (orange) markers,
+        // then save one round so an earlier edit shows as saved (green).
+        var line2 = doc.Document.GetLineByNumber(2);
+        doc.Document.Replace(line2.Offset, line2.Length, "def render(widget, theme):  # edited");
+        doc.ChangeHistory.MarkSaved();
+        var line7 = doc.Document.GetLineByNumber(7);
+        doc.Document.Replace(line7.Offset, line7.Length, "    for widget in widgets:  # just edited");
+
+        Capture(window, "08-style-marks");
+    }
 }

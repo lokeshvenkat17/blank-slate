@@ -18,7 +18,9 @@ public partial class EditorView : UserControl, IEditorHandle
     private static readonly IBrush CurrentLineBrush = new SolidColorBrush(Color.FromArgb(28, 128, 128, 128));
 
     private readonly BookmarkMargin _bookmarkMargin = new();
+    private readonly ChangeHistoryMargin _changeMargin = new();
     private readonly MarkAllColorizer _markColorizer = new();
+    private readonly StyleMarkColorizer _styleColorizer = new();
     private TextMate.Installation _textMate;
     private string? _appliedScope;
     private EditorSettings? _settings;
@@ -29,6 +31,9 @@ public partial class EditorView : UserControl, IEditorHandle
         InitializeComponent();
 
         Editor.TextArea.LeftMargins.Insert(0, _bookmarkMargin);
+        Editor.TextArea.LeftMargins.Insert(1, _changeMargin);
+        // Style marks paint under the Mark All highlight.
+        Editor.TextArea.TextView.LineTransformers.Add(_styleColorizer);
         Editor.TextArea.TextView.LineTransformers.Add(_markColorizer);
 
         _textMate = Editor.InstallTextMate(SyntaxService.Registry);
@@ -131,7 +136,11 @@ public partial class EditorView : UserControl, IEditorHandle
         vm.PropertyChanged += OnDocumentPropertyChanged;
 
         _bookmarkMargin.Bookmarks = vm.Bookmarks;
+        _changeMargin.History = vm.ChangeHistory;
+        _styleColorizer.Marks = vm.StyleMarks;
         _markColorizer.Pattern = vm.MarkPattern;
+        vm.StyleMarks.Changed -= OnStyleMarksChanged;
+        vm.StyleMarks.Changed += OnStyleMarksChanged;
         ApplyGrammar();
         Editor.TextArea.TextView.Redraw();
 
@@ -166,6 +175,8 @@ public partial class EditorView : UserControl, IEditorHandle
             ApplyGrammar();
         }
     }
+
+    private void OnStyleMarksChanged(object? sender, EventArgs e) => Editor.TextArea.TextView.Redraw();
 
     private void OnSettingsChanged(object? sender, PropertyChangedEventArgs e) => ApplySettings();
 

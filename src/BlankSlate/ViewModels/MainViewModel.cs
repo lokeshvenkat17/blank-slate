@@ -809,6 +809,175 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    // ---- Style marks, braces, change history, incremental search (Phase 3b) ----
+
+    /// <summary>Selection, or the word under the caret when nothing is selected.</summary>
+    private (int Offset, int Length, string Text)? GetToken()
+    {
+        if (SelectedDocument is not { EditorHandle: { } handle } doc)
+            return null;
+        if (handle.SelectionLength > 0)
+            return (handle.SelectionStart, handle.SelectionLength,
+                    doc.Document.GetText(handle.SelectionStart, handle.SelectionLength));
+        if (StyleMarkSet.GetWordAt(doc.Document, handle.CaretOffset) is not { } word)
+            return null;
+        return (word.Offset, word.Length, doc.Document.GetText(word.Offset, word.Length));
+    }
+
+    /// <summary>Search &gt; Style All Occurrences of Token, Using Nth Style.</summary>
+    [RelayCommand]
+    private void StyleAllOccurrences(int style)
+    {
+        if (SelectedDocument is { } doc && GetToken() is { } token)
+            doc.StyleMarks.MarkAll(token.Text, style);
+    }
+
+    /// <summary>Search &gt; Style One Token, Using Nth Style.</summary>
+    [RelayCommand]
+    private void StyleOneToken(int style)
+    {
+        if (SelectedDocument is { } doc && GetToken() is { } token)
+            doc.StyleMarks.MarkOne(token.Offset, token.Length, style);
+    }
+
+    [RelayCommand]
+    private void ClearStyle(int style) => SelectedDocument?.StyleMarks.Clear(style);
+
+    [RelayCommand]
+    private void ClearAllStyles() => SelectedDocument?.StyleMarks.ClearAll();
+
+    [RelayCommand]
+    private void JumpDownStyle(int style)
+    {
+        if (SelectedDocument is { EditorHandle: { } handle } doc
+            && doc.StyleMarks.NextMark(handle.CaretOffset, style) is { } offset)
+            handle.SelectAndReveal(offset, 0);
+    }
+
+    [RelayCommand]
+    private void JumpUpStyle(int style)
+    {
+        if (SelectedDocument is { EditorHandle: { } handle } doc
+            && doc.StyleMarks.PreviousMark(handle.CaretOffset, style) is { } offset)
+            handle.SelectAndReveal(offset, 0);
+    }
+
+    [RelayCommand]
+    private async Task CopyStyledTextAsync(int style)
+    {
+        if (SelectedDocument is not { EditorHandle: { } handle } doc)
+            return;
+        var text = style < 0 ? doc.StyleMarks.GetAllStyledText() : doc.StyleMarks.GetStyledText(style);
+        if (!string.IsNullOrEmpty(text))
+            await handle.SetClipboardTextAsync(text);
+    }
+
+    // ---- Matching braces ----
+
+    [RelayCommand]
+    private void GoToMatchingBrace()
+    {
+        if (SelectedDocument is not { EditorHandle: { } handle } doc)
+            return;
+        if (BraceMatcher.FindMatch(doc.Document.Text, handle.CaretOffset) is { } pair)
+            handle.SelectAndReveal(pair.Match, 0);
+    }
+
+    [RelayCommand]
+    private void SelectBetweenBraces()
+    {
+        if (SelectedDocument is not { EditorHandle: { } handle } doc)
+            return;
+        if (BraceMatcher.FindInnerRange(doc.Document.Text, handle.CaretOffset) is { } range)
+            handle.SelectAndReveal(range.Start, range.Length);
+    }
+
+    // ---- Change history ----
+
+    [RelayCommand]
+    private void GoToNextChange()
+    {
+        if (SelectedDocument is { } doc && doc.ChangeHistory.NextChange(doc.CaretLine) is { } line)
+            doc.RequestGoToLine(line);
+    }
+
+    [RelayCommand]
+    private void GoToPreviousChange()
+    {
+        if (SelectedDocument is { } doc && doc.ChangeHistory.PreviousChange(doc.CaretLine) is { } line)
+            doc.RequestGoToLine(line);
+    }
+
+    [RelayCommand]
+    private void ClearChangeHistory() => SelectedDocument?.ChangeHistory.Clear();
+
+    // ---- Incremental search ----
+
+    [ObservableProperty]
+    public partial bool IsIncrementalSearchVisible { get; set; }
+
+    [ObservableProperty]
+    public partial string IncrementalSearchText { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string IncrementalSearchStatus { get; set; } = "";
+
+    [RelayCommand]
+    private void ShowIncrementalSearch()
+    {
+        IncrementalSearchText = "";
+        IncrementalSearchStatus = "";
+        IsIncrementalSearchVisible = true;
+    }
+
+    [RelayCommand]
+    private void HideIncrementalSearch()
+    {
+        IsIncrementalSearchVisible = false;
+        SelectedDocument?.EditorHandle?.SelectAndReveal(
+            SelectedDocument.EditorHandle.CaretOffset, 0);
+    }
+
+    partial void OnIncrementalSearchTextChanged(string value) => RunIncrementalSearch(fromOffset: null, backward: false);
+
+    /// <summary>Searches from the current match (or a given offset) and selects the hit.</summary>
+    public void RunIncrementalSearch(int? fromOffset, bool backward)
+    {
+        if (SelectedDocument is not { EditorHandle: { } handle } doc)
+            return;
+        if (IncrementalSearchText.Length == 0)
+        {
+            IncrementalSearchStatus = "";
+            return;
+        }
+
+        var query = new SearchQuery { Pattern = IncrementalSearchText, Mode = SearchMode.Normal };
+        // Typing extends the current match, so search from its start; stepping moves past it.
+        var start = fromOffset ?? handle.SelectionStart;
+        var match = SearchService.FindNext(doc.Document.Text, query, start, backward);
+        if (match is null)
+        {
+            IncrementalSearchStatus = "not found";
+            return;
+        }
+        IncrementalSearchStatus = "";
+        handle.SelectAndReveal(match.Index, match.Length);
+    }
+
+    [RelayCommand]
+    private void IncrementalSearchNext()
+    {
+        if (SelectedDocument?.EditorHandle is { } handle)
+            RunIncrementalSearch(handle.SelectionStart + Math.Max(1, handle.SelectionLength), backward: false);
+    }
+
+    [RelayCommand]
+    private void IncrementalSearchPrevious()
+    {
+        if (SelectedDocument?.EditorHandle is { } handle)
+            RunIncrementalSearch(handle.SelectionStart, backward: true);
+    }
+
     // ---- Plugins (Phase 7) ----
 
     /// <summary>
