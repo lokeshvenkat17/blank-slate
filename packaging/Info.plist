@@ -27,7 +27,7 @@
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.developer-tools</string>
     <key>NSHumanReadableCopyright</key>
-    <string>BlankSlate — an open-source text editor inspired by Notepad++.</string>
+    <string>BlankSlate, an open-source text editor inspired by Notepad++. MIT licensed.</string>
     <key>CFBundleDocumentTypes</key>
     <array>
         <dict>

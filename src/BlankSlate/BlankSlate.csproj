@@ -4,8 +4,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <!-- Keep in sync with packaging/Info.plist CFBundleShortVersionString -->
-    <Version>0.1.0</Version>
+    <!-- Version comes from Directory.Build.props; the packaging script stamps the
+         same value into Info.plist so they cannot drift. -->
+    <Version>$(BlankSlateVersion)</Version>
   </PropertyGroup>
 
   <ItemGroup>

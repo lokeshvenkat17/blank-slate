@@ -18,7 +18,7 @@
 
     <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" FontSize="12" Opacity="0.75"
                Margin="0,0,0,10"
-               Text="Plugins are .NET assemblies in the plugins folder, one sub-folder per plugin. They run in-process with full trust — only install plugins you trust. Enabling or disabling takes effect after a restart." />
+               Text="Plugins are .NET assemblies in the plugins folder, one sub-folder per plugin. They run in-process with full trust, so only install plugins you trust. Enabling or disabling takes effect after a restart." />
 
     <Border BorderThickness="1" CornerRadius="4"
             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">

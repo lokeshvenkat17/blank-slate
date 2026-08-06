@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Single source of truth for the app version.
+         scripts/package-macos.sh stamps this into the .app's Info.plist at build time,
+         so the About dialog and the bundle can never disagree. -->
+    <BlankSlateVersion>0.1.0</BlankSlateVersion>
+  </PropertyGroup>
+</Project>
