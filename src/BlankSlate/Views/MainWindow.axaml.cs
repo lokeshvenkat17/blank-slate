@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -29,6 +30,7 @@ public partial class MainWindow : Window
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(KeyDownEvent, OnRecordKeyDown, RoutingStrategies.Tunnel);
         AddHandler(TextInputEvent, OnRecordTextInput, RoutingStrategies.Tunnel);
+        WireNativeMenuClicks();
         if (Services.LayoutDiagnostics.IsEnabled)
         {
             // Dump after layout has settled so bounds are meaningful.
@@ -84,24 +86,6 @@ public partial class MainWindow : Window
             vm.RecordMacroStep(new MacroTextStep(e.Text));
     }
 
-    private void BuildMacroMenu()
-    {
-        if (ViewModel is null)
-            return;
-        // Remove previously added saved-macro items (everything after the trailing separator).
-        var separatorIndex = MacroMenu.Items.IndexOf(MacroMenuSeparator);
-        for (var i = MacroMenu.Items.Count - 1; i > separatorIndex; i--)
-            MacroMenu.Items.RemoveAt(i);
-        foreach (var macro in ViewModel.SavedMacros)
-        {
-            MacroMenu.Items.Add(new MenuItem
-            {
-                Header = macro.Name,
-                Command = ViewModel.PlaySavedMacroCommand,
-                CommandParameter = macro,
-            });
-        }
-    }
 
     /// <summary>Enter / Shift+Enter step through matches; Esc closes the bar.</summary>
     private void OnIncrementalSearchKeyDown(object? sender, KeyEventArgs e)
@@ -134,43 +118,159 @@ public partial class MainWindow : Window
             : new GridLength(0);
     }
 
-    private void OnAboutClick(object? sender, RoutedEventArgs e)
+    // ---- Native menu plumbing ----
+    //
+    // NativeMenuItem is not a Control, so x:Name generates no field. The dynamic
+    // menus are located by their header instead.
+
+    private NativeMenu? FindMenu(params string[] headerPath)
+    {
+        var menu = NativeMenu.GetMenu(this);
+        foreach (var header in headerPath)
+        {
+            var item = menu?.Items.OfType<NativeMenuItem>()
+                .FirstOrDefault(i => i.Header == header);
+            menu = item?.Menu;
+        }
+        return menu;
+    }
+
+    /// <summary>Item counts of the statically declared part of each dynamic menu.</summary>
+    private readonly Dictionary<string, int> _staticMenuCounts = [];
+
+    /// <summary>Removes previously appended dynamic entries, keeping the XAML-declared ones.</summary>
+    private NativeMenu? TrimToStaticItems(string key, params string[] headerPath)
+    {
+        var menu = FindMenu(headerPath);
+        if (menu is null)
+            return null;
+        if (!_staticMenuCounts.TryGetValue(key, out var keep))
+            _staticMenuCounts[key] = keep = menu.Items.Count;
+        while (menu.Items.Count > keep)
+            menu.Items.RemoveAt(menu.Items.Count - 1);
+        return menu;
+    }
+
+    private void BuildMacroMenu()
+    {
+        if (ViewModel is null || TrimToStaticItems("macro", "Macro") is not { } menu)
+            return;
+        foreach (var macro in ViewModel.SavedMacros)
+        {
+            menu.Items.Add(new NativeMenuItem(macro.Name)
+            {
+                Command = ViewModel.PlaySavedMacroCommand,
+                CommandParameter = macro,
+            });
+        }
+    }
+
+    /// <summary>Groups plugin-contributed commands into one submenu per plugin.</summary>
+    private void BuildPluginsMenu()
+    {
+        if (ViewModel is null || TrimToStaticItems("plugins", "Plugins") is not { } menu)
+            return;
+
+        foreach (var group in ViewModel.PluginCommands.GroupBy(c => c.PluginName))
+        {
+            var groupItem = new NativeMenuItem(group.Key) { Menu = new NativeMenu() };
+            foreach (var command in group)
+            {
+                groupItem.Menu.Items.Add(new NativeMenuItem(command.Title)
+                {
+                    Command = ViewModel.RunPluginCommandCommand,
+                    CommandParameter = command,
+                });
+            }
+            menu.Items.Add(groupItem);
+        }
+
+        if (ViewModel.PluginCommands.Count == 0)
+            menu.Items.Add(new NativeMenuItem("(no plugins installed)") { IsEnabled = false });
+    }
+
+    private void BuildRecentFilesMenu()
+    {
+        if (ViewModel is null || FindMenu("File", "Open Recent") is not { } menu)
+            return;
+        menu.Items.Clear();
+        foreach (var path in ViewModel.RecentFiles)
+        {
+            menu.Items.Add(new NativeMenuItem(path)
+            {
+                Command = ViewModel.OpenRecentFileCommand,
+                CommandParameter = path,
+            });
+        }
+        if (ViewModel.RecentFiles.Count > 0)
+            menu.Items.Add(new NativeMenuItemSeparator());
+        menu.Items.Add(new NativeMenuItem("Empty Recent Files List")
+        {
+            Command = ViewModel.ClearRecentFilesCommand,
+            IsEnabled = ViewModel.RecentFiles.Count > 0,
+        });
+    }
+
+    /// <summary>Language menu grouped by first letter, Notepad++ style.</summary>
+    private void BuildLanguageMenu()
+    {
+        if (ViewModel is null || FindMenu("Language") is not { } menu)
+            return;
+        menu.Items.Clear();
+
+        menu.Items.Add(new NativeMenuItem("Normal Text")
+        {
+            Command = ViewModel.SetLanguageCommand,
+            CommandParameter = null,
+        });
+        menu.Items.Add(new NativeMenuItemSeparator());
+
+        var byLetter = Services.SyntaxService.Languages
+            .GroupBy(l => char.ToUpperInvariant(Services.SyntaxService.GetDisplayName(l)[0]))
+            .OrderBy(g => g.Key);
+        foreach (var group in byLetter)
+        {
+            var groupItem = new NativeMenuItem(group.Key.ToString()) { Menu = new NativeMenu() };
+            foreach (var language in group)
+            {
+                groupItem.Menu.Items.Add(new NativeMenuItem(Services.SyntaxService.GetDisplayName(language))
+                {
+                    Command = ViewModel.SetLanguageCommand,
+                    CommandParameter = language.Id,
+                });
+            }
+            menu.Items.Add(groupItem);
+        }
+
+        menu.Items.Add(new NativeMenuItemSeparator());
+        menu.Items.Add(new NativeMenuItem("Open Grammars Folder…")
+        {
+            Command = ViewModel.OpenGrammarsFolderCommand,
+        });
+    }
+
+    private void OnAboutClick(object? sender, EventArgs e)
         => (Avalonia.Application.Current as App)?.ShowAboutWindow();
 
-    private void OnPluginManagerClick(object? sender, RoutedEventArgs e)
+    private void OnPluginManagerClick(object? sender, EventArgs e)
     {
         if (ViewModel is null)
             return;
         new PluginManagerWindow { DataContext = ViewModel }.ShowDialog(this);
     }
 
-    /// <summary>Groups plugin-contributed commands into one submenu per plugin.</summary>
-    private void BuildPluginsMenu()
+    /// <summary>NativeMenuItem.Click is a plain EventHandler, so XAML cannot bind it.</summary>
+    private void WireNativeMenuClicks()
     {
-        if (ViewModel is null)
-            return;
-        var separatorIndex = PluginsMenu.Items.IndexOf(PluginsMenuSeparator);
-        for (var i = PluginsMenu.Items.Count - 1; i > separatorIndex; i--)
-            PluginsMenu.Items.RemoveAt(i);
+        NativeMenuItem? Find(string parent, string header)
+            => FindMenu(parent)?.Items.OfType<NativeMenuItem>().FirstOrDefault(i => i.Header == header);
 
-        foreach (var group in ViewModel.PluginCommands.GroupBy(c => c.PluginName))
-        {
-            var groupItem = new MenuItem { Header = group.Key };
-            foreach (var command in group)
-            {
-                groupItem.Items.Add(new MenuItem
-                {
-                    Header = command.Title,
-                    Command = ViewModel.RunPluginCommandCommand,
-                    CommandParameter = command,
-                });
-            }
-            PluginsMenu.Items.Add(groupItem);
-        }
-
-        if (ViewModel.PluginCommands.Count == 0)
-            PluginsMenu.Items.Add(new MenuItem { Header = "(no plugins installed)", IsEnabled = false });
+        if (Find("Plugins", "Plugin Manager…") is { } pluginManager)
+            pluginManager.Click += OnPluginManagerClick;
+        if (Find("Help", "About BlankSlate") is { } about)
+            about.Click += OnAboutClick;
     }
+
 
     /// <summary>Double-click a tab header to rename the document (file on disk, or tab title when untitled).</summary>
     private async void OnTabHeaderDoubleTapped(object? sender, TappedEventArgs e)
@@ -188,68 +288,7 @@ public partial class MainWindow : Window
             ViewModel.GoToFunctionCommand.Execute(entry);
     }
 
-    private void BuildRecentFilesMenu()
-    {
-        if (ViewModel is null)
-            return;
-        RecentFilesMenu.Items.Clear();
-        foreach (var path in ViewModel.RecentFiles)
-        {
-            RecentFilesMenu.Items.Add(new MenuItem
-            {
-                Header = path,
-                Command = ViewModel.OpenRecentFileCommand,
-                CommandParameter = path,
-            });
-        }
-        if (ViewModel.RecentFiles.Count > 0)
-            RecentFilesMenu.Items.Add(new Separator());
-        RecentFilesMenu.Items.Add(new MenuItem
-        {
-            Header = "Empty Recent Files List",
-            Command = ViewModel.ClearRecentFilesCommand,
-            IsEnabled = ViewModel.RecentFiles.Count > 0,
-        });
-    }
 
-    /// <summary>Builds Language menu grouped by first letter (Notepad++ style): Normal Text, then A > Asciidoc…, B > Batch…</summary>
-    private void BuildLanguageMenu()
-    {
-        if (ViewModel is null)
-            return;
-        LanguageMenu.Items.Clear();
-
-        var plainText = new MenuItem { Header = "Normal Text" };
-        plainText.Command = ViewModel.SetLanguageCommand;
-        plainText.CommandParameter = null;
-        LanguageMenu.Items.Add(plainText);
-        LanguageMenu.Items.Add(new Separator());
-
-        var byLetter = Services.SyntaxService.Languages
-            .GroupBy(l => char.ToUpperInvariant(Services.SyntaxService.GetDisplayName(l)[0]))
-            .OrderBy(g => g.Key);
-        foreach (var group in byLetter)
-        {
-            var groupItem = new MenuItem { Header = group.Key.ToString() };
-            foreach (var language in group)
-            {
-                groupItem.Items.Add(new MenuItem
-                {
-                    Header = Services.SyntaxService.GetDisplayName(language),
-                    Command = ViewModel.SetLanguageCommand,
-                    CommandParameter = language.Id,
-                });
-            }
-            LanguageMenu.Items.Add(groupItem);
-        }
-
-        LanguageMenu.Items.Add(new Separator());
-        LanguageMenu.Items.Add(new MenuItem
-        {
-            Header = "Open Grammars Folder…",
-            Command = ViewModel.OpenGrammarsFolderCommand,
-        });
-    }
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
 

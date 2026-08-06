@@ -181,13 +181,14 @@ public class PluginSystemTests
         Assert.Equal(3, vm.PluginCommands.Count);
         Assert.Contains(vm.PluginCommands, c => c.Title == "Word Count");
 
-        var pluginsMenu = window.GetVisualDescendants()
-            .OfType<Avalonia.Controls.MenuItem>()
-            .FirstOrDefault(m => (m.Header as string) == "_Plugins");
-        Assert.True(pluginsMenu is not null, "Plugins menu was not found in the window");
+        // The menu now lives in the macOS system menu bar, not the visual tree.
+        var pluginsMenu = Avalonia.Controls.NativeMenu.GetMenu(window)!
+            .Items.OfType<Avalonia.Controls.NativeMenuItem>()
+            .FirstOrDefault(m => m.Header == "Plugins");
+        Assert.True(pluginsMenu is not null, "Plugins menu was not found in the native menu");
 
-        var groups = pluginsMenu!.Items.OfType<Avalonia.Controls.MenuItem>()
-            .Select(m => m.Header as string).ToList();
+        var groups = pluginsMenu!.Menu!.Items.OfType<Avalonia.Controls.NativeMenuItem>()
+            .Select(m => m.Header).ToList();
         Assert.Contains("Text Tools", groups);
     }
 

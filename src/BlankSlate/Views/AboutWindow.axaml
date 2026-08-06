@@ -17,7 +17,10 @@
                Text="A free, cross-platform text editor for macOS inspired by Notepad++. Tabs, syntax highlighting for 82 languages, powerful search, macros, and sessions that never lose your work." />
     <TextBlock TextWrapping="Wrap" TextAlignment="Center" FontSize="11" Opacity="0.6" Margin="0,8,0,0"
                Text="Built with .NET and Avalonia UI · Text engine: AvaloniaEdit · Grammars: TextMate" />
+    <!-- HorizontalContentAlignment matters here: without it the label sits at the left
+         edge of the button, which reads as an off-centre button. -->
     <Button Content="OK" IsDefault="True" IsCancel="True" MinWidth="90"
-            HorizontalAlignment="Center" Margin="0,10,0,0" Click="OnOkClick" />
+            HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+            Margin="0,10,0,0" Click="OnOkClick" />
   </StackPanel>
 </Window>

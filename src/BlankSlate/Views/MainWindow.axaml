@@ -3,6 +3,7 @@
         xmlns:vm="using:BlankSlate.ViewModels"
         xmlns:views="using:BlankSlate.Views"
         xmlns:models="using:BlankSlate.Models"
+        xmlns:sys="using:System"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="650"
@@ -17,16 +18,417 @@
     <vm:MainViewModel />
   </Design.DataContext>
 
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="File">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="New" Gesture="{OnPlatform Ctrl+N, macOS=Cmd+N}" Command="{Binding NewFileCommand}" />
+            <NativeMenuItem Header="Open…" Gesture="{OnPlatform Ctrl+O, macOS=Cmd+O}" Command="{Binding OpenFileCommand}" />
+            <NativeMenuItem Header="Open Recent">
+              <NativeMenuItem.Menu><NativeMenu /></NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Save" Gesture="{OnPlatform Ctrl+S, macOS=Cmd+S}" Command="{Binding SaveCommand}" />
+            <NativeMenuItem Header="Save As…" Gesture="{OnPlatform Ctrl+Shift+S, macOS=Cmd+Shift+S}" Command="{Binding SaveAsCommand}" />
+            <NativeMenuItem Header="Save All" Command="{Binding SaveAllCommand}" />
+            <NativeMenuItem Header="Rename…" Command="{Binding RenameCommand}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Close Tab" Gesture="{OnPlatform Ctrl+W, macOS=Cmd+W}" Command="{Binding CloseDocumentCommand}" />
+            <NativeMenuItem Header="Close All" Command="{Binding CloseAllCommand}" />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Edit">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Undo" Gesture="{OnPlatform Ctrl+Z, macOS=Cmd+Z}" Command="{Binding UndoCommand}" />
+            <NativeMenuItem Header="Redo" Gesture="{OnPlatform Ctrl+Y, macOS=Cmd+Shift+Z}" Command="{Binding RedoCommand}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Cut" Gesture="{OnPlatform Ctrl+X, macOS=Cmd+X}" Command="{Binding CutCommand}" />
+            <NativeMenuItem Header="Copy" Gesture="{OnPlatform Ctrl+C, macOS=Cmd+C}" Command="{Binding CopyCommand}" />
+            <NativeMenuItem Header="Paste" Gesture="{OnPlatform Ctrl+V, macOS=Cmd+V}" Command="{Binding PasteCommand}" />
+            <NativeMenuItem Header="Delete" Gesture="Delete" Command="{Binding DeleteCommand}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Select All" Gesture="{OnPlatform Ctrl+A, macOS=Cmd+A}" Command="{Binding SelectAllCommand}" />
+            <NativeMenuItem Header="Auto-Completion">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Word Completion" Gesture="{OnPlatform Ctrl+Space, macOS=Ctrl+Space}" Command="{Binding WordCompletionCommand}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Begin/End Select" Gesture="{OnPlatform Ctrl+Alt+M, macOS=Cmd+Alt+M}" Command="{Binding BeginEndSelectCommand}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Insert">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Date Time (short)" Command="{Binding InsertDateTimeShortCommand}" />
+                  <NativeMenuItem Header="Date Time (long)" Command="{Binding InsertDateTimeLongCommand}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Copy to Clipboard">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Copy Current Full File Path" Command="{Binding CopyToClipboardCommand}" CommandParameter="path" />
+                  <NativeMenuItem Header="Copy Current Filename" Command="{Binding CopyToClipboardCommand}" CommandParameter="name" />
+                  <NativeMenuItem Header="Copy Current Dir. Path" Command="{Binding CopyToClipboardCommand}" CommandParameter="dir" />
+                  <NativeMenuItemSeparator />
+                  <NativeMenuItem Header="Copy All Filenames" Command="{Binding CopyToClipboardCommand}" CommandParameter="allnames" />
+                  <NativeMenuItem Header="Copy All File Paths" Command="{Binding CopyToClipboardCommand}" CommandParameter="allpaths" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Indent">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Increase Line Indent" Command="{Binding IncreaseIndentCommand}" />
+                  <NativeMenuItem Header="Decrease Line Indent" Command="{Binding DecreaseIndentCommand}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Convert Case to">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="UPPERCASE" Gesture="{OnPlatform Ctrl+Shift+U, macOS=Cmd+Shift+U}" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Upper}" />
+                  <NativeMenuItem Header="lowercase" Gesture="{OnPlatform Ctrl+U, macOS=Cmd+U}" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Lower}" />
+                  <NativeMenuItem Header="Proper Case" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.ProperForce}" />
+                  <NativeMenuItem Header="Proper Case (blend)" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.ProperBlend}" />
+                  <NativeMenuItem Header="Sentence case" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.SentenceForce}" />
+                  <NativeMenuItem Header="Sentence case (blend)" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.SentenceBlend}" />
+                  <NativeMenuItem Header="iNVERT cASE" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Invert}" />
+                  <NativeMenuItem Header="ranDOm CasE" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Random}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Line Operations">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Duplicate Current Line" Gesture="{OnPlatform Ctrl+D, macOS=Cmd+D}" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Duplicate}" />
+                  <NativeMenuItem Header="Remove Duplicate Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveDuplicates}" />
+                  <NativeMenuItem Header="Remove Consecutive Duplicate Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveConsecutiveDuplicates}" />
+                  <NativeMenuItem Header="Join Lines" Gesture="{OnPlatform Ctrl+J, macOS=Cmd+J}" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.JoinLines}" />
+                  <NativeMenuItem Header="Move Up Current Line" Gesture="{OnPlatform Ctrl+Shift+Up, macOS=Cmd+Shift+Up}" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.MoveUp}" />
+                  <NativeMenuItem Header="Move Down Current Line" Gesture="{OnPlatform Ctrl+Shift+Down, macOS=Cmd+Shift+Down}" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.MoveDown}" />
+                  <NativeMenuItem Header="Remove Empty Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveEmpty}" />
+                  <NativeMenuItem Header="Remove Empty Lines (Containing Blank characters)" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveEmptyWithBlank}" />
+                  <NativeMenuItem Header="Insert Blank Line Above Current" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.BlankAbove}" />
+                  <NativeMenuItem Header="Insert Blank Line Below Current" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.BlankBelow}" />
+                  <NativeMenuItem Header="Reverse Line Order" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Reverse}" />
+                  <NativeMenuItem Header="Randomize Line Order" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Randomize}" />
+                  <NativeMenuItemSeparator />
+                  <NativeMenuItem Header="Sort Lines Lexicographically Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexAsc}" />
+                  <NativeMenuItem Header="Sort Lines Lex. Ascending Ignoring Case" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexCiAsc}" />
+                  <NativeMenuItem Header="Sort Lines In Locale Order Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LocaleAsc}" />
+                  <NativeMenuItem Header="Sort Lines As Integers Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.IntAsc}" />
+                  <NativeMenuItem Header="Sort Lines As Decimals (Comma) Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecCommaAsc}" />
+                  <NativeMenuItem Header="Sort Lines As Decimals (Dot) Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecDotAsc}" />
+                  <NativeMenuItem Header="Sort Lines By Length Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LenAsc}" />
+                  <NativeMenuItemSeparator />
+                  <NativeMenuItem Header="Sort Lines Lexicographically Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexDesc}" />
+                  <NativeMenuItem Header="Sort Lines Lex. Descending Ignoring Case" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexCiDesc}" />
+                  <NativeMenuItem Header="Sort Lines In Locale Order Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LocaleDesc}" />
+                  <NativeMenuItem Header="Sort Lines As Integers Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.IntDesc}" />
+                  <NativeMenuItem Header="Sort Lines As Decimals (Comma) Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecCommaDesc}" />
+                  <NativeMenuItem Header="Sort Lines As Decimals (Dot) Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecDotDesc}" />
+                  <NativeMenuItem Header="Sort Lines By Length Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LenDesc}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Comment/Uncomment">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Toggle Single Line Comment" Gesture="{OnPlatform Ctrl+Q, macOS=Cmd+OemQuestion}" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.ToggleLine}" />
+                  <NativeMenuItem Header="Single Line Comment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.SetLine}" />
+                  <NativeMenuItem Header="Single Line Uncomment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.RemoveLine}" />
+                  <NativeMenuItem Header="Block Comment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.BlockSet}" />
+                  <NativeMenuItem Header="Block Uncomment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.BlockRemove}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Blank Operations">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Trim Trailing Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimTrailing}" />
+                  <NativeMenuItem Header="Trim Leading Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimLeading}" />
+                  <NativeMenuItem Header="Trim Leading and Trailing Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimBoth}" />
+                  <NativeMenuItem Header="EOL to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.EolToSpace}" />
+                  <NativeMenuItem Header="Trim Both and EOL to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimAll}" />
+                  <NativeMenuItemSeparator />
+                  <NativeMenuItem Header="TAB to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TabToSpace}" />
+                  <NativeMenuItem Header="Space to TAB (All)" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.SpaceToTabAll}" />
+                  <NativeMenuItem Header="Space to TAB (Leading)" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.SpaceToTabLeading}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="EOL Conversion">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Windows (CR LF)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Crlf}" />
+                  <NativeMenuItem Header="Unix (LF)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Lf}" />
+                  <NativeMenuItem Header="Macintosh (CR)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Cr}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Search">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Find…" Gesture="{OnPlatform Ctrl+F, macOS=Cmd+F}" Command="{Binding ShowFindCommand}" />
+            <NativeMenuItem Header="Find in Files…" Gesture="{OnPlatform Ctrl+Shift+F, macOS=Cmd+Shift+F}" Command="{Binding ShowFindInFilesCommand}" />
+            <NativeMenuItem Header="Find Next" Gesture="F3" Command="{Binding FindNextCommand}" />
+            <NativeMenuItem Header="Find Previous" Gesture="Shift+F3" Command="{Binding FindPreviousCommand}" />
+            <NativeMenuItem Header="Select and Find Next" Gesture="{OnPlatform Ctrl+F3, macOS=Cmd+F3}" Command="{Binding SelectAndFindNextCommand}" />
+            <NativeMenuItem Header="Select and Find Previous" Gesture="{OnPlatform Ctrl+Shift+F3, macOS=Cmd+Shift+F3}" Command="{Binding SelectAndFindPreviousCommand}" />
+            <NativeMenuItem Header="Replace…" Gesture="{OnPlatform Ctrl+H, macOS=Cmd+Alt+F}" Command="{Binding ShowReplaceCommand}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Go to…" Gesture="{OnPlatform Ctrl+G, macOS=Cmd+L}" Command="{Binding GoToLineCommand}" />
+            <NativeMenuItem Header="Mark…" Command="{Binding ShowMarkCommand}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Style All Occurrences of Token">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Using 1st Style" Command="{Binding StyleAllOccurrencesCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>0</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Using 2nd Style" Command="{Binding StyleAllOccurrencesCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>1</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Using 3rd Style" Command="{Binding StyleAllOccurrencesCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>2</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Using 4th Style" Command="{Binding StyleAllOccurrencesCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>3</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Using 5th Style" Command="{Binding StyleAllOccurrencesCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>4</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Style One Token">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Using 1st Style" Command="{Binding StyleOneTokenCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>0</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Using 2nd Style" Command="{Binding StyleOneTokenCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>1</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Using 3rd Style" Command="{Binding StyleOneTokenCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>2</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Using 4th Style" Command="{Binding StyleOneTokenCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>3</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Using 5th Style" Command="{Binding StyleOneTokenCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>4</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Clear Style">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Clear 1st Style" Command="{Binding ClearStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>0</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Clear 2nd Style" Command="{Binding ClearStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>1</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Clear 3rd Style" Command="{Binding ClearStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>2</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Clear 4th Style" Command="{Binding ClearStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>3</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="Clear 5th Style" Command="{Binding ClearStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>4</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItemSeparator />
+                  <NativeMenuItem Header="Clear All Styles" Command="{Binding ClearAllStylesCommand}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Jump Up">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="1st Style" Command="{Binding JumpUpStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>0</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="2nd Style" Command="{Binding JumpUpStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>1</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="3rd Style" Command="{Binding JumpUpStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>2</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="4th Style" Command="{Binding JumpUpStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>3</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="5th Style" Command="{Binding JumpUpStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>4</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Jump Down">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="1st Style" Command="{Binding JumpDownStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>0</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="2nd Style" Command="{Binding JumpDownStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>1</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="3rd Style" Command="{Binding JumpDownStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>2</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="4th Style" Command="{Binding JumpDownStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>3</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="5th Style" Command="{Binding JumpDownStyleCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>4</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Copy Styled Text">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="1st Style" Command="{Binding CopyStyledTextCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>0</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="2nd Style" Command="{Binding CopyStyledTextCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>1</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="3rd Style" Command="{Binding CopyStyledTextCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>2</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="4th Style" Command="{Binding CopyStyledTextCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>3</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItem Header="5th Style" Command="{Binding CopyStyledTextCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>4</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                  <NativeMenuItemSeparator />
+                  <NativeMenuItem Header="All Styles" Command="{Binding CopyStyledTextCommand}">
+                    <NativeMenuItem.CommandParameter><sys:Int32>-1</sys:Int32></NativeMenuItem.CommandParameter>
+                  </NativeMenuItem>
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Change History">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Go to Next Change" Command="{Binding GoToNextChangeCommand}" />
+                  <NativeMenuItem Header="Go to Previous Change" Command="{Binding GoToPreviousChangeCommand}" />
+                  <NativeMenuItem Header="Clear Change History" Command="{Binding ClearChangeHistoryCommand}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+            <NativeMenuItem Header="Incremental Search" Gesture="{OnPlatform Ctrl+Alt+I, macOS=Cmd+Alt+I}" Command="{Binding ShowIncrementalSearchCommand}" />
+            <NativeMenuItem Header="Go to Matching Brace" Gesture="{OnPlatform Ctrl+B, macOS=Cmd+B}" Command="{Binding GoToMatchingBraceCommand}" />
+            <NativeMenuItem Header="Select All In-between Braces" Gesture="{OnPlatform Ctrl+Alt+B, macOS=Cmd+Alt+B}" Command="{Binding SelectBetweenBracesCommand}" />
+            <NativeMenuItem Header="Bookmark">
+              <NativeMenuItem.Menu>
+                <NativeMenu>
+                  <NativeMenuItem Header="Toggle Bookmark" Gesture="{OnPlatform Ctrl+F2, macOS=Cmd+F2}" Command="{Binding ToggleBookmarkCommand}" />
+                  <NativeMenuItem Header="Next Bookmark" Gesture="F2" Command="{Binding NextBookmarkCommand}" />
+                  <NativeMenuItem Header="Previous Bookmark" Gesture="Shift+F2" Command="{Binding PreviousBookmarkCommand}" />
+                  <NativeMenuItem Header="Clear All Bookmarks" Command="{Binding ClearBookmarksCommand}" />
+                  <NativeMenuItem Header="Inverse Bookmarks" Command="{Binding InverseBookmarksCommand}" />
+                  <NativeMenuItemSeparator />
+                  <NativeMenuItem Header="Cut Bookmarked Lines" Command="{Binding CutBookmarkedLinesCommand}" />
+                  <NativeMenuItem Header="Copy Bookmarked Lines" Command="{Binding CopyBookmarkedLinesCommand}" />
+                  <NativeMenuItem Header="Paste to (Replace) Bookmarked Lines" Command="{Binding PasteToBookmarkedLinesCommand}" />
+                  <NativeMenuItem Header="Remove Bookmarked Lines" Command="{Binding RemoveBookmarkedLinesCommand}" />
+                  <NativeMenuItem Header="Remove Non-Bookmarked Lines" Command="{Binding RemoveNonBookmarkedLinesCommand}" />
+                </NativeMenu>
+              </NativeMenuItem.Menu>
+            </NativeMenuItem>
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="View">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Word Wrap" ToggleType="CheckBox" IsChecked="{Binding Settings.WordWrap}" />
+            <NativeMenuItem Header="Show Whitespace and TAB" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowWhitespace}" />
+            <NativeMenuItem Header="Show End of Line" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowEndOfLine}" />
+            <NativeMenuItem Header="Highlight Current Line" ToggleType="CheckBox" IsChecked="{Binding Settings.HighlightCurrentLine}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Move Current Document to Other View" Command="{Binding MoveToOtherViewCommand}" />
+            <NativeMenuItem Header="Clone Current Document to Other View" Command="{Binding CloneToOtherViewCommand}" />
+            <NativeMenuItem Header="Document Map" ToggleType="CheckBox" IsChecked="{Binding IsDocumentMapVisible}" />
+            <NativeMenuItem Header="Function List" ToggleType="CheckBox" IsChecked="{Binding IsFunctionListVisible}" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem Header="Zoom In" Gesture="{OnPlatform Ctrl+OemPlus, macOS=Cmd+OemPlus}" Command="{Binding ZoomInCommand}" />
+            <NativeMenuItem Header="Zoom Out" Gesture="{OnPlatform Ctrl+OemMinus, macOS=Cmd+OemMinus}" Command="{Binding ZoomOutCommand}" />
+            <NativeMenuItem Header="Restore Default Zoom" Gesture="{OnPlatform Ctrl+D0, macOS=Cmd+D0}" Command="{Binding ZoomResetCommand}" />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Language">
+        <NativeMenuItem.Menu><NativeMenu /></NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Macro">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Start Recording" Gesture="{OnPlatform Ctrl+Shift+R, macOS=Cmd+Shift+R}" Command="{Binding StartMacroRecordingCommand}" />
+            <NativeMenuItem Header="Stop Recording" Command="{Binding StopMacroRecordingCommand}" />
+            <NativeMenuItem Header="Playback" Gesture="{OnPlatform Ctrl+Shift+P, macOS=Cmd+Shift+P}" Command="{Binding PlaybackMacroCommand}" />
+            <NativeMenuItem Header="Run a Macro Multiple Times…" Command="{Binding RunMacroMultipleTimesCommand}" />
+            <NativeMenuItem Header="Save Current Recorded Macro…" Command="{Binding SaveCurrentMacroCommand}" />
+            <NativeMenuItemSeparator />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Encoding">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="UTF-8" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8}" />
+            <NativeMenuItem Header="UTF-8-BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8Bom}" />
+            <NativeMenuItem Header="UTF-16 LE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16LeBom}" />
+            <NativeMenuItem Header="UTF-16 BE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16BeBom}" />
+            <NativeMenuItem Header="ANSI" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Ansi}" />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Plugins">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="Plugin Manager…" />
+            <NativeMenuItem Header="Open Plugins Folder…" Command="{Binding OpenPluginsFolderCommand}" />
+            <NativeMenuItemSeparator />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Help">
+        <NativeMenuItem.Menu>
+          <NativeMenu>
+            <NativeMenuItem Header="About BlankSlate" />
+          </NativeMenu>
+        </NativeMenuItem.Menu>
+      </NativeMenuItem>
+    </NativeMenu>
+  </NativeMenu.Menu>
+
   <!-- Compact Notepad++-style file tabs (Fluent default is oversized pivot headers) -->
   <Window.Styles>
-    <Style Selector="TabControl#DocumentTabs > TabItem, TabControl#SecondaryTabs > TabItem">
+    <Style Selector="TabStrip#DocumentTabs > TabStripItem, TabStrip#SecondaryTabs > TabStripItem">
       <Setter Property="FontSize" Value="13" />
       <Setter Property="FontWeight" Value="Normal" />
       <Setter Property="Padding" Value="12,5" />
       <Setter Property="MinHeight" Value="30" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-    <Style Selector="TabControl#DocumentTabs > TabItem:selected, TabControl#SecondaryTabs > TabItem:selected">
+    <Style Selector="TabStrip#DocumentTabs > TabStripItem:selected, TabStrip#SecondaryTabs > TabStripItem:selected">
       <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
     </Style>
   </Window.Styles>
@@ -34,277 +436,7 @@
   <DockPanel>
 
     <!-- ============ Menu bar ============ -->
-    <Menu DockPanel.Dock="Top">
-      <MenuItem Header="_File">
-        <MenuItem Header="_New" Command="{Binding NewFileCommand}"
-                  HotKey="{OnPlatform Ctrl+N, macOS=Cmd+N}" InputGesture="{OnPlatform Ctrl+N, macOS=Cmd+N}" />
-        <MenuItem Header="_Open…" Command="{Binding OpenFileCommand}"
-                  HotKey="{OnPlatform Ctrl+O, macOS=Cmd+O}" InputGesture="{OnPlatform Ctrl+O, macOS=Cmd+O}" />
-        <MenuItem Header="Open _Recent" Name="RecentFilesMenu" />
-        <Separator />
-        <MenuItem Header="_Save" Command="{Binding SaveCommand}"
-                  HotKey="{OnPlatform Ctrl+S, macOS=Cmd+S}" InputGesture="{OnPlatform Ctrl+S, macOS=Cmd+S}" />
-        <MenuItem Header="Save _As…" Command="{Binding SaveAsCommand}"
-                  HotKey="{OnPlatform Ctrl+Shift+S, macOS=Cmd+Shift+S}" InputGesture="{OnPlatform Ctrl+Shift+S, macOS=Cmd+Shift+S}" />
-        <MenuItem Header="Save A_ll" Command="{Binding SaveAllCommand}" />
-        <MenuItem Header="Rena_me…" Command="{Binding RenameCommand}" />
-        <Separator />
-        <MenuItem Header="_Close Tab" Command="{Binding CloseDocumentCommand}"
-                  HotKey="{OnPlatform Ctrl+W, macOS=Cmd+W}" InputGesture="{OnPlatform Ctrl+W, macOS=Cmd+W}" />
-        <MenuItem Header="Close All" Command="{Binding CloseAllCommand}" />
-      </MenuItem>
-      <MenuItem Header="_Edit">
-        <MenuItem Header="_Undo" Command="{Binding UndoCommand}"
-                  InputGesture="{OnPlatform Ctrl+Z, macOS=Cmd+Z}" />
-        <MenuItem Header="_Redo" Command="{Binding RedoCommand}"
-                  InputGesture="{OnPlatform Ctrl+Y, macOS=Cmd+Shift+Z}" />
-        <Separator />
-        <MenuItem Header="Cu_t" Command="{Binding CutCommand}"
-                  InputGesture="{OnPlatform Ctrl+X, macOS=Cmd+X}" />
-        <MenuItem Header="_Copy" Command="{Binding CopyCommand}"
-                  InputGesture="{OnPlatform Ctrl+C, macOS=Cmd+C}" />
-        <MenuItem Header="_Paste" Command="{Binding PasteCommand}"
-                  InputGesture="{OnPlatform Ctrl+V, macOS=Cmd+V}" />
-        <MenuItem Header="_Delete" Command="{Binding DeleteCommand}" InputGesture="Delete" />
-        <Separator />
-        <MenuItem Header="Select _All" Command="{Binding SelectAllCommand}"
-                  InputGesture="{OnPlatform Ctrl+A, macOS=Cmd+A}" />
-        <MenuItem Header="_Auto-Completion">
-          <MenuItem Header="Word Completion" Command="{Binding WordCompletionCommand}"
-                    HotKey="{OnPlatform Ctrl+Space, macOS=Cmd+Space}" InputGesture="{OnPlatform Ctrl+Space, macOS=Ctrl+Space}" />
-        </MenuItem>
-        <MenuItem Header="Begin/End Select" Command="{Binding BeginEndSelectCommand}"
-                  InputGesture="{OnPlatform Ctrl+Alt+M, macOS=Cmd+Alt+M}" />
-        <Separator />
-        <MenuItem Header="Insert">
-          <MenuItem Header="Date Time (short)" Command="{Binding InsertDateTimeShortCommand}" />
-          <MenuItem Header="Date Time (long)" Command="{Binding InsertDateTimeLongCommand}" />
-        </MenuItem>
-        <MenuItem Header="Cop_y to Clipboard">
-          <MenuItem Header="Copy Current Full File Path" Command="{Binding CopyToClipboardCommand}" CommandParameter="path" />
-          <MenuItem Header="Copy Current Filename" Command="{Binding CopyToClipboardCommand}" CommandParameter="name" />
-          <MenuItem Header="Copy Current Dir. Path" Command="{Binding CopyToClipboardCommand}" CommandParameter="dir" />
-          <Separator />
-          <MenuItem Header="Copy All Filenames" Command="{Binding CopyToClipboardCommand}" CommandParameter="allnames" />
-          <MenuItem Header="Copy All File Paths" Command="{Binding CopyToClipboardCommand}" CommandParameter="allpaths" />
-        </MenuItem>
-        <MenuItem Header="_Indent">
-          <MenuItem Header="Increase Line Indent" Command="{Binding IncreaseIndentCommand}" />
-          <MenuItem Header="Decrease Line Indent" Command="{Binding DecreaseIndentCommand}" />
-        </MenuItem>
-        <MenuItem Header="Con_vert Case to">
-          <MenuItem Header="UPPERCASE" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Upper}"
-                    InputGesture="{OnPlatform Ctrl+Shift+U, macOS=Cmd+Shift+U}" />
-          <MenuItem Header="lowercase" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Lower}"
-                    InputGesture="{OnPlatform Ctrl+U, macOS=Cmd+U}" />
-          <MenuItem Header="Proper Case" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.ProperForce}" />
-          <MenuItem Header="Proper Case (blend)" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.ProperBlend}" />
-          <MenuItem Header="Sentence case" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.SentenceForce}" />
-          <MenuItem Header="Sentence case (blend)" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.SentenceBlend}" />
-          <MenuItem Header="iNVERT cASE" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Invert}" />
-          <MenuItem Header="ranDOm CasE" Command="{Binding ConvertCaseCommand}" CommandParameter="{x:Static models:CaseKind.Random}" />
-        </MenuItem>
-        <MenuItem Header="_Line Operations">
-          <MenuItem Header="Duplicate Current Line" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Duplicate}"
-                    InputGesture="{OnPlatform Ctrl+D, macOS=Cmd+D}" />
-          <MenuItem Header="Remove Duplicate Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveDuplicates}" />
-          <MenuItem Header="Remove Consecutive Duplicate Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveConsecutiveDuplicates}" />
-          <MenuItem Header="Join Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.JoinLines}"
-                    InputGesture="{OnPlatform Ctrl+J, macOS=Cmd+J}" />
-          <MenuItem Header="Move Up Current Line" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.MoveUp}"
-                    InputGesture="{OnPlatform Ctrl+Shift+Up, macOS=Cmd+Shift+Up}" />
-          <MenuItem Header="Move Down Current Line" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.MoveDown}"
-                    InputGesture="{OnPlatform Ctrl+Shift+Down, macOS=Cmd+Shift+Down}" />
-          <MenuItem Header="Remove Empty Lines" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveEmpty}" />
-          <MenuItem Header="Remove Empty Lines (Containing Blank characters)" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.RemoveEmptyWithBlank}" />
-          <MenuItem Header="Insert Blank Line Above Current" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.BlankAbove}" />
-          <MenuItem Header="Insert Blank Line Below Current" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.BlankBelow}" />
-          <MenuItem Header="Reverse Line Order" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Reverse}" />
-          <MenuItem Header="Randomize Line Order" Command="{Binding LineOperationCommand}" CommandParameter="{x:Static models:LineOpKind.Randomize}" />
-          <Separator />
-          <MenuItem Header="Sort Lines Lexicographically Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexAsc}" />
-          <MenuItem Header="Sort Lines Lex. Ascending Ignoring Case" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexCiAsc}" />
-          <MenuItem Header="Sort Lines In Locale Order Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LocaleAsc}" />
-          <MenuItem Header="Sort Lines As Integers Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.IntAsc}" />
-          <MenuItem Header="Sort Lines As Decimals (Comma) Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecCommaAsc}" />
-          <MenuItem Header="Sort Lines As Decimals (Dot) Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecDotAsc}" />
-          <MenuItem Header="Sort Lines By Length Ascending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LenAsc}" />
-          <Separator />
-          <MenuItem Header="Sort Lines Lexicographically Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexDesc}" />
-          <MenuItem Header="Sort Lines Lex. Descending Ignoring Case" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LexCiDesc}" />
-          <MenuItem Header="Sort Lines In Locale Order Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LocaleDesc}" />
-          <MenuItem Header="Sort Lines As Integers Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.IntDesc}" />
-          <MenuItem Header="Sort Lines As Decimals (Comma) Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecCommaDesc}" />
-          <MenuItem Header="Sort Lines As Decimals (Dot) Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.DecDotDesc}" />
-          <MenuItem Header="Sort Lines By Length Descending" Command="{Binding SortLinesCommand}" CommandParameter="{x:Static models:SortKind.LenDesc}" />
-        </MenuItem>
-        <MenuItem Header="Co_mment/Uncomment">
-          <MenuItem Header="Toggle Single Line Comment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.ToggleLine}"
-                    InputGesture="{OnPlatform Ctrl+Q, macOS=Cmd+OemQuestion}" />
-          <MenuItem Header="Single Line Comment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.SetLine}" />
-          <MenuItem Header="Single Line Uncomment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.RemoveLine}" />
-          <MenuItem Header="Block Comment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.BlockSet}" />
-          <MenuItem Header="Block Uncomment" Command="{Binding CommentOperationCommand}" CommandParameter="{x:Static models:CommentOpKind.BlockRemove}" />
-        </MenuItem>
-        <MenuItem Header="_Blank Operations">
-          <MenuItem Header="Trim Trailing Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimTrailing}" />
-          <MenuItem Header="Trim Leading Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimLeading}" />
-          <MenuItem Header="Trim Leading and Trailing Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimBoth}" />
-          <MenuItem Header="EOL to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.EolToSpace}" />
-          <MenuItem Header="Trim Both and EOL to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TrimAll}" />
-          <Separator />
-          <MenuItem Header="TAB to Space" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.TabToSpace}" />
-          <MenuItem Header="Space to TAB (All)" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.SpaceToTabAll}" />
-          <MenuItem Header="Space to TAB (Leading)" Command="{Binding BlankOperationCommand}" CommandParameter="{x:Static models:BlankOpKind.SpaceToTabLeading}" />
-        </MenuItem>
-        <Separator />
-        <MenuItem Header="EOL Conversion">
-          <MenuItem Header="Windows (CR LF)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Crlf}" />
-          <MenuItem Header="Unix (LF)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Lf}" />
-          <MenuItem Header="Macintosh (CR)" Command="{Binding SetEolCommand}" CommandParameter="{x:Static models:EolMode.Cr}" />
-        </MenuItem>
-      </MenuItem>
-      <MenuItem Header="_Search">
-        <MenuItem Header="_Find…" Command="{Binding ShowFindCommand}"
-                  HotKey="{OnPlatform Ctrl+F, macOS=Cmd+F}" InputGesture="{OnPlatform Ctrl+F, macOS=Cmd+F}" />
-        <MenuItem Header="Find in Fi_les…" Command="{Binding ShowFindInFilesCommand}"
-                  HotKey="{OnPlatform Ctrl+Shift+F, macOS=Cmd+Shift+F}" InputGesture="{OnPlatform Ctrl+Shift+F, macOS=Cmd+Shift+F}" />
-        <MenuItem Header="Find _Next" Command="{Binding FindNextCommand}"
-                  HotKey="F3" InputGesture="F3" />
-        <MenuItem Header="Find _Previous" Command="{Binding FindPreviousCommand}"
-                  HotKey="Shift+F3" InputGesture="Shift+F3" />
-        <MenuItem Header="Select and Find Ne_xt" Command="{Binding SelectAndFindNextCommand}"
-                  HotKey="{OnPlatform Ctrl+F3, macOS=Cmd+F3}" InputGesture="{OnPlatform Ctrl+F3, macOS=Cmd+F3}" />
-        <MenuItem Header="Select and Find Pre_vious" Command="{Binding SelectAndFindPreviousCommand}"
-                  HotKey="{OnPlatform Ctrl+Shift+F3, macOS=Cmd+Shift+F3}" InputGesture="{OnPlatform Ctrl+Shift+F3, macOS=Cmd+Shift+F3}" />
-        <MenuItem Header="_Replace…" Command="{Binding ShowReplaceCommand}"
-                  HotKey="{OnPlatform Ctrl+H, macOS=Cmd+Alt+F}" InputGesture="{OnPlatform Ctrl+H, macOS=Cmd+Alt+F}" />
-        <Separator />
-        <MenuItem Header="_Go to…" Command="{Binding GoToLineCommand}"
-                  HotKey="{OnPlatform Ctrl+G, macOS=Cmd+L}" InputGesture="{OnPlatform Ctrl+G, macOS=Cmd+L}" />
-        <MenuItem Header="Mar_k…" Command="{Binding ShowMarkCommand}" />
-        <Separator />
-        <Separator />
-        <MenuItem Header="Style All Occurrences of Token">
-          <MenuItem Header="Using 1st Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="0" />
-          <MenuItem Header="Using 2nd Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="1" />
-          <MenuItem Header="Using 3rd Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="2" />
-          <MenuItem Header="Using 4th Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="3" />
-          <MenuItem Header="Using 5th Style" Command="{Binding StyleAllOccurrencesCommand}" CommandParameter="4" />
-        </MenuItem>
-        <MenuItem Header="Style One Token">
-          <MenuItem Header="Using 1st Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="0" />
-          <MenuItem Header="Using 2nd Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="1" />
-          <MenuItem Header="Using 3rd Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="2" />
-          <MenuItem Header="Using 4th Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="3" />
-          <MenuItem Header="Using 5th Style" Command="{Binding StyleOneTokenCommand}" CommandParameter="4" />
-        </MenuItem>
-        <MenuItem Header="Clear Style">
-          <MenuItem Header="Clear 1st Style" Command="{Binding ClearStyleCommand}" CommandParameter="0" />
-          <MenuItem Header="Clear 2nd Style" Command="{Binding ClearStyleCommand}" CommandParameter="1" />
-          <MenuItem Header="Clear 3rd Style" Command="{Binding ClearStyleCommand}" CommandParameter="2" />
-          <MenuItem Header="Clear 4th Style" Command="{Binding ClearStyleCommand}" CommandParameter="3" />
-          <MenuItem Header="Clear 5th Style" Command="{Binding ClearStyleCommand}" CommandParameter="4" />
-          <Separator />
-          <MenuItem Header="Clear All Styles" Command="{Binding ClearAllStylesCommand}" />
-        </MenuItem>
-        <MenuItem Header="Jump Up">
-          <MenuItem Header="1st Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="0" />
-          <MenuItem Header="2nd Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="1" />
-          <MenuItem Header="3rd Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="2" />
-          <MenuItem Header="4th Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="3" />
-          <MenuItem Header="5th Style" Command="{Binding JumpUpStyleCommand}" CommandParameter="4" />
-        </MenuItem>
-        <MenuItem Header="Jump Down">
-          <MenuItem Header="1st Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="0" />
-          <MenuItem Header="2nd Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="1" />
-          <MenuItem Header="3rd Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="2" />
-          <MenuItem Header="4th Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="3" />
-          <MenuItem Header="5th Style" Command="{Binding JumpDownStyleCommand}" CommandParameter="4" />
-        </MenuItem>
-        <MenuItem Header="Copy Styled Text">
-          <MenuItem Header="1st Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="0" />
-          <MenuItem Header="2nd Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="1" />
-          <MenuItem Header="3rd Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="2" />
-          <MenuItem Header="4th Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="3" />
-          <MenuItem Header="5th Style" Command="{Binding CopyStyledTextCommand}" CommandParameter="4" />
-          <Separator />
-          <MenuItem Header="All Styles" Command="{Binding CopyStyledTextCommand}" CommandParameter="-1" />
-        </MenuItem>
-        <Separator />
-        <MenuItem Header="Change History">
-          <MenuItem Header="Go to Next Change" Command="{Binding GoToNextChangeCommand}" />
-          <MenuItem Header="Go to Previous Change" Command="{Binding GoToPreviousChangeCommand}" />
-          <MenuItem Header="Clear Change History" Command="{Binding ClearChangeHistoryCommand}" />
-        </MenuItem>
-        <MenuItem Header="_Incremental Search" Command="{Binding ShowIncrementalSearchCommand}"
-                  HotKey="{OnPlatform Ctrl+Alt+I, macOS=Cmd+Alt+I}" InputGesture="{OnPlatform Ctrl+Alt+I, macOS=Cmd+Alt+I}" />
-        <MenuItem Header="Go to Matching Brace" Command="{Binding GoToMatchingBraceCommand}"
-                  HotKey="{OnPlatform Ctrl+B, macOS=Cmd+B}" InputGesture="{OnPlatform Ctrl+B, macOS=Cmd+B}" />
-        <MenuItem Header="Select All In-between Braces" Command="{Binding SelectBetweenBracesCommand}"
-                  HotKey="{OnPlatform Ctrl+Alt+B, macOS=Cmd+Alt+B}" InputGesture="{OnPlatform Ctrl+Alt+B, macOS=Cmd+Alt+B}" />
-        <MenuItem Header="_Bookmark">
-          <MenuItem Header="Toggle Bookmark" Command="{Binding ToggleBookmarkCommand}"
-                    HotKey="{OnPlatform Ctrl+F2, macOS=Cmd+F2}" InputGesture="{OnPlatform Ctrl+F2, macOS=Cmd+F2}" />
-          <MenuItem Header="Next Bookmark" Command="{Binding NextBookmarkCommand}"
-                    HotKey="F2" InputGesture="F2" />
-          <MenuItem Header="Previous Bookmark" Command="{Binding PreviousBookmarkCommand}"
-                    HotKey="Shift+F2" InputGesture="Shift+F2" />
-          <MenuItem Header="Clear All Bookmarks" Command="{Binding ClearBookmarksCommand}" />
-          <MenuItem Header="Inverse Bookmarks" Command="{Binding InverseBookmarksCommand}" />
-          <Separator />
-          <MenuItem Header="Cut Bookmarked Lines" Command="{Binding CutBookmarkedLinesCommand}" />
-          <MenuItem Header="Copy Bookmarked Lines" Command="{Binding CopyBookmarkedLinesCommand}" />
-          <MenuItem Header="Paste to (Replace) Bookmarked Lines" Command="{Binding PasteToBookmarkedLinesCommand}" />
-          <MenuItem Header="Remove Bookmarked Lines" Command="{Binding RemoveBookmarkedLinesCommand}" />
-          <MenuItem Header="Remove Non-Bookmarked Lines" Command="{Binding RemoveNonBookmarkedLinesCommand}" />
-        </MenuItem>
-      </MenuItem>
-      <MenuItem Header="_View">
-        <MenuItem Header="_Word Wrap" ToggleType="CheckBox" IsChecked="{Binding Settings.WordWrap}" />
-        <MenuItem Header="Show White_space and TAB" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowWhitespace}" />
-        <MenuItem Header="Show End of _Line" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowEndOfLine}" />
-        <MenuItem Header="Highlight Current _Line" ToggleType="CheckBox" IsChecked="{Binding Settings.HighlightCurrentLine}" />
-        <Separator />
-        <MenuItem Header="_Move Current Document to Other View" Command="{Binding MoveToOtherViewCommand}" />
-        <MenuItem Header="C_lone Current Document to Other View" Command="{Binding CloneToOtherViewCommand}" />
-        <MenuItem Header="Document _Map" ToggleType="CheckBox" IsChecked="{Binding IsDocumentMapVisible}" />
-        <MenuItem Header="_Function List" ToggleType="CheckBox" IsChecked="{Binding IsFunctionListVisible}" />
-        <Separator />
-        <MenuItem Header="Zoom _In" Command="{Binding ZoomInCommand}"
-                  InputGesture="{OnPlatform Ctrl+OemPlus, macOS=Cmd+OemPlus}" />
-        <MenuItem Header="Zoom _Out" Command="{Binding ZoomOutCommand}"
-                  InputGesture="{OnPlatform Ctrl+OemMinus, macOS=Cmd+OemMinus}" />
-        <MenuItem Header="_Restore Default Zoom" Command="{Binding ZoomResetCommand}"
-                  InputGesture="{OnPlatform Ctrl+D0, macOS=Cmd+D0}" />
-      </MenuItem>
-      <MenuItem Header="_Language" Name="LanguageMenu" />
-      <MenuItem Header="_Macro" Name="MacroMenu">
-        <MenuItem Header="Start Recording" Command="{Binding StartMacroRecordingCommand}"
-                  HotKey="{OnPlatform Ctrl+Shift+R, macOS=Cmd+Shift+R}" InputGesture="{OnPlatform Ctrl+Shift+R, macOS=Cmd+Shift+R}" />
-        <MenuItem Header="Stop Recording" Command="{Binding StopMacroRecordingCommand}" />
-        <MenuItem Header="Playback" Command="{Binding PlaybackMacroCommand}"
-                  HotKey="{OnPlatform Ctrl+Shift+P, macOS=Cmd+Shift+P}" InputGesture="{OnPlatform Ctrl+Shift+P, macOS=Cmd+Shift+P}" />
-        <MenuItem Header="Run a Macro Multiple Times…" Command="{Binding RunMacroMultipleTimesCommand}" />
-        <MenuItem Header="Save Current Recorded Macro…" Command="{Binding SaveCurrentMacroCommand}" />
-        <Separator Name="MacroMenuSeparator" />
-      </MenuItem>
-      <MenuItem Header="Enco_ding">
-        <MenuItem Header="UTF-8" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8}" />
-        <MenuItem Header="UTF-8-BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf8Bom}" />
-        <MenuItem Header="UTF-16 LE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16LeBom}" />
-        <MenuItem Header="UTF-16 BE BOM" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Utf16BeBom}" />
-        <MenuItem Header="ANSI" Command="{Binding SetEncodingCommand}" CommandParameter="{x:Static models:TextEncodingKind.Ansi}" />
-      </MenuItem>
-      <MenuItem Header="_Plugins" Name="PluginsMenu">
-        <MenuItem Header="Plugin Manager…" Click="OnPluginManagerClick" />
-        <MenuItem Header="Open Plugins Folder…" Command="{Binding OpenPluginsFolderCommand}" />
-        <Separator Name="PluginsMenuSeparator" />
-      </MenuItem>
-      <MenuItem Header="_Help">
-        <MenuItem Header="About BlankSlate" Click="OnAboutClick" />
-      </MenuItem>
-    </Menu>
+    <NativeMenuBar DockPanel.Dock="Top" />
 
     <!-- ============ Incremental search bar ============ -->
     <Border DockPanel.Dock="Bottom" Padding="8,5" IsVisible="{Binding IsIncrementalSearchVisible}"
@@ -373,52 +505,14 @@
 
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Name="ViewsGrid">
       <DockPanel Grid.Column="0">
-      <Button DockPanel.Dock="Right" VerticalAlignment="Top"
-              Content="+" FontSize="18" Padding="9,2" Margin="2,3,6,0"
-              Background="Transparent" BorderThickness="0"
-              Command="{Binding NewFileCommand}"
-              ToolTip.Tip="New tab (⌘N)" />
-      <TabControl Name="DocumentTabs"
-                  ItemsSource="{Binding PrimaryDocuments}"
-                  SelectedItem="{Binding PrimarySelectedDocument}"
-                  Padding="0">
-        <TabControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:DocumentViewModel">
-            <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent"
-                        DoubleTapped="OnTabHeaderDoubleTapped"
-                        ToolTip.Tip="Double-click to rename">
-              <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
-              <TextBlock Text="•" VerticalAlignment="Center" FontWeight="Bold"
-                         IsVisible="{Binding IsDirty}" />
-              <Button Content="✕"
-                      FontSize="10"
-                      Padding="4,1"
-                      Background="Transparent"
-                      BorderThickness="0"
-                      VerticalAlignment="Center"
-                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseDocumentCommand}"
-                      CommandParameter="{Binding}" />
-            </StackPanel>
-          </DataTemplate>
-        </TabControl.ItemTemplate>
-        <TabControl.ContentTemplate>
-          <DataTemplate x:DataType="vm:DocumentViewModel">
-            <views:DocumentEditorHost />
-          </DataTemplate>
-        </TabControl.ContentTemplate>
-      </TabControl>
-      </DockPanel>
-
-      <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch"
-                    IsVisible="{Binding IsSecondaryViewVisible}" />
-
-      <!-- Second tab group (Notepad++'s other view) -->
-      <TabControl Grid.Column="2" Name="SecondaryTabs" Padding="0"
-                  IsVisible="{Binding IsSecondaryViewVisible}"
-                  ItemsSource="{Binding SecondaryDocuments}"
-                  SelectedItem="{Binding SecondarySelectedDocument}">
-        <TabControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:DocumentViewModel">
+        <!-- Tab row: the strip sizes to its tabs, so the + button lands right after
+             the last one instead of being pushed to the window edge. -->
+        <DockPanel DockPanel.Dock="Top">
+          <TabStrip Name="DocumentTabs" DockPanel.Dock="Left"
+                    ItemsSource="{Binding PrimaryDocuments}"
+                    SelectedItem="{Binding PrimarySelectedDocument}">
+            <TabStrip.ItemTemplate>
+              <DataTemplate x:DataType="vm:DocumentViewModel">
             <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent"
                         DoubleTapped="OnTabHeaderDoubleTapped"
                         ToolTip.Tip="Double-click to rename">
@@ -430,14 +524,62 @@
                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseDocumentCommand}"
                       CommandParameter="{Binding}" />
             </StackPanel>
-          </DataTemplate>
-        </TabControl.ItemTemplate>
-        <TabControl.ContentTemplate>
-          <DataTemplate x:DataType="vm:DocumentViewModel">
-            <views:DocumentEditorHost />
-          </DataTemplate>
-        </TabControl.ContentTemplate>
-      </TabControl>
+              </DataTemplate>
+            </TabStrip.ItemTemplate>
+          </TabStrip>
+          <Button DockPanel.Dock="Left" Content="+" FontSize="16" Padding="8,1"
+                  Margin="4,0,0,0" VerticalAlignment="Center"
+                  Background="Transparent" BorderThickness="0"
+                  Command="{Binding NewFileCommand}"
+                  ToolTip.Tip="New tab (⌘N)" />
+          <Panel />
+        </DockPanel>
+
+        <ContentControl Content="{Binding PrimarySelectedDocument}">
+          <ContentControl.ContentTemplate>
+            <DataTemplate x:DataType="vm:DocumentViewModel">
+              <views:DocumentEditorHost />
+            </DataTemplate>
+          </ContentControl.ContentTemplate>
+        </ContentControl>
+      </DockPanel>
+
+      <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch"
+                    IsVisible="{Binding IsSecondaryViewVisible}" />
+
+      <!-- Second tab group (Notepad++'s other view) -->
+      <DockPanel Grid.Column="2" IsVisible="{Binding IsSecondaryViewVisible}">
+        <DockPanel DockPanel.Dock="Top">
+          <TabStrip Name="SecondaryTabs" DockPanel.Dock="Left"
+                    ItemsSource="{Binding SecondaryDocuments}"
+                    SelectedItem="{Binding SecondarySelectedDocument}">
+            <TabStrip.ItemTemplate>
+              <DataTemplate x:DataType="vm:DocumentViewModel">
+            <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent"
+                        DoubleTapped="OnTabHeaderDoubleTapped"
+                        ToolTip.Tip="Double-click to rename">
+              <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+              <TextBlock Text="•" VerticalAlignment="Center" FontWeight="Bold"
+                         IsVisible="{Binding IsDirty}" />
+              <Button Content="✕" FontSize="10" Padding="4,1"
+                      Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
+                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseDocumentCommand}"
+                      CommandParameter="{Binding}" />
+            </StackPanel>
+              </DataTemplate>
+            </TabStrip.ItemTemplate>
+          </TabStrip>
+          <Panel />
+        </DockPanel>
+
+        <ContentControl Content="{Binding SecondarySelectedDocument}">
+          <ContentControl.ContentTemplate>
+            <DataTemplate x:DataType="vm:DocumentViewModel">
+              <views:DocumentEditorHost />
+            </DataTemplate>
+          </ContentControl.ContentTemplate>
+        </ContentControl>
+      </DockPanel>
       </Grid>
 
       <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch"
