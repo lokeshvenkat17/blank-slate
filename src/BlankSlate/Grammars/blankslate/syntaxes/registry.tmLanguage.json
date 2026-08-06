@@ -1,0 +1,71 @@
+{
+  "name": "Windows Registry",
+  "scopeName": "source.registry",
+  "fileTypes": [
+    "reg"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#key-path"
+    },
+    {
+      "include": "#value-name"
+    },
+    {
+      "include": "#value-type"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:;).*$",
+      "name": "comment.line.registry"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.registry",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.registry"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?<![\\w.])HKEY_CLASSES_ROOT|HKEY_CURRENT_USER|HKEY_LOCAL_MACHINE|HKEY_USERS|HKEY_CURRENT_CONFIG(?![\\w])",
+      "name": "constant.language.registry"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.registry"
+    },
+    "key-path": {
+      "match": "^\\s*\\[-?[^\\]]+\\]",
+      "name": "entity.name.tag.registry"
+    },
+    "value-name": {
+      "match": "^\\s*(\\\"[^\\\"]*\\\"|@)\\s*(?==)",
+      "captures": {
+        "1": {
+          "name": "variable.other.registry"
+        }
+      }
+    },
+    "value-type": {
+      "match": "\\b(?:dword|hex|hex\\(\\d\\)|qword)\\b",
+      "name": "storage.type.registry"
+    }
+  }
+}

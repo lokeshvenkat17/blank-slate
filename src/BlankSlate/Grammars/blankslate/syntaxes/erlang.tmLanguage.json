@@ -1,0 +1,89 @@
+{
+  "name": "Erlang",
+  "scopeName": "source.erlang",
+  "fileTypes": [
+    "erl",
+    "hrl"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#extra0"
+    },
+    {
+      "include": "#extra1"
+    },
+    {
+      "include": "#extra2"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:%).*$",
+      "name": "comment.line.erlang"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.erlang",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.erlang"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.erlang",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.erlang"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?<![\\w.])true|false|undefined|ok|error(?![\\w])",
+      "name": "constant.language.erlang"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.erlang"
+    },
+    "keywords": {
+      "match": "\\b(?:receive|andalso|orelse|after|begin|catch|case|cond|when|band|bxor|bnot|end|fun|let|try|div|rem|bor|not|and|xor|if|of|or)\\b",
+      "name": "keyword.control.erlang"
+    },
+    "extra0": {
+      "match": "^-\\s*(module|export|import|record|define|include|include_lib|behaviour|spec|type|ifdef|ifndef|endif)\\b",
+      "name": "keyword.other.directive.erlang"
+    },
+    "extra1": {
+      "match": "\\b[a-z][a-zA-Z0-9_]*(?=\\()",
+      "name": "entity.name.function.erlang"
+    },
+    "extra2": {
+      "match": "\\b[A-Z][a-zA-Z0-9_]*\\b",
+      "name": "variable.other.erlang"
+    }
+  }
+}

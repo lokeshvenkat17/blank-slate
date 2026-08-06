@@ -1,0 +1,85 @@
+{
+  "name": "TOML",
+  "scopeName": "source.toml",
+  "fileTypes": [
+    "toml"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#table"
+    },
+    {
+      "include": "#key"
+    },
+    {
+      "include": "#datetime"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:\\#).*$",
+      "name": "comment.line.toml"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.toml",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.toml"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.toml",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.toml"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?<![\\w.])true|false(?![\\w])",
+      "name": "constant.language.toml"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.toml"
+    },
+    "table": {
+      "match": "^\\s*\\[{1,2}[^\\]]*\\]{1,2}",
+      "name": "entity.name.tag.toml"
+    },
+    "key": {
+      "match": "^\\s*([A-Za-z0-9_.\\\"'-]+)\\s*(?==)",
+      "captures": {
+        "1": {
+          "name": "variable.other.key.toml"
+        }
+      }
+    },
+    "datetime": {
+      "match": "\\b\\d{4}-\\d{2}-\\d{2}(?:[Tt ]\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:[Zz]|[+-]\\d{2}:\\d{2})?)?\\b",
+      "name": "constant.other.datetime.toml"
+    }
+  }
+}

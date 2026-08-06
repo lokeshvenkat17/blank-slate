@@ -1,0 +1,82 @@
+{
+  "name": "Smalltalk",
+  "scopeName": "source.smalltalk",
+  "fileTypes": [
+    "st",
+    "cs.st"
+  ],
+  "patterns": [
+    {
+      "include": "#st-comment"
+    },
+    {
+      "include": "#st-string"
+    },
+    {
+      "include": "#symbol"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#keyword-msg"
+    }
+  ],
+  "repository": {
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.smalltalk",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.smalltalk"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.smalltalk",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.smalltalk"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?<![\\w.])true|false|nil(?![\\w])",
+      "name": "constant.language.smalltalk"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.smalltalk"
+    },
+    "keywords": {
+      "match": "\\b(?:thisContext|timesRepeat|whileFalse|whileTrue|yourself|ifFalse|collect|ifTrue|select|reject|detect|inject|super|false|self|true|into|nil|do|to|by)\\b",
+      "name": "keyword.control.smalltalk"
+    },
+    "st-comment": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "comment.block.smalltalk"
+    },
+    "st-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.smalltalk"
+    },
+    "symbol": {
+      "match": "#[A-Za-z_][A-Za-z0-9_:]*",
+      "name": "constant.other.symbol.smalltalk"
+    },
+    "keyword-msg": {
+      "match": "\\b[A-Za-z_][A-Za-z0-9_]*:",
+      "name": "entity.name.function.smalltalk"
+    }
+  }
+}

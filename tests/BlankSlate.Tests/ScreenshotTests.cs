@@ -112,4 +112,60 @@ public class ScreenshotTests
         window.Show();
         Capture(window, "05-plugin-manager");
     }
+
+    [AvaloniaFact]
+    public void Capture_BundledGrammar_Toml()
+    {
+        var window = new MainWindow { Width = 1000, Height = 650 };
+        var vm = new MainViewModel(null);
+        window.DataContext = vm;
+        window.Show();
+        window.UpdateLayout();
+        Dispatcher.UIThread.RunJobs();
+
+        var doc = vm.SelectedDocument!;
+        doc.LanguageId = "toml";
+        doc.Document.Text = """
+            # BlankSlate bundled grammar demo
+            [package]
+            name = "blankslate"
+            version = "0.1.0"
+            edition = 2024
+
+            [dependencies]
+            avalonia = { version = "12.1.0", features = ["desktop"] }
+            enabled = true
+            """;
+        Capture(window, "06-toml-grammar");
+    }
+
+    [AvaloniaFact]
+    public void Capture_BundledGrammar_Haskell()
+    {
+        var window = new MainWindow { Width = 1000, Height = 650 };
+        var vm = new MainViewModel(null);
+        window.DataContext = vm;
+        window.Show();
+        window.UpdateLayout();
+        Dispatcher.UIThread.RunJobs();
+
+        var doc = vm.SelectedDocument!;
+        doc.LanguageId = "haskell";
+        doc.Document.Text = """
+            -- Bundled Haskell grammar
+            module Main where
+
+            import Data.List (sort)
+
+            factorial :: Integer -> Integer
+            factorial 0 = 1
+            factorial n = n * factorial (n - 1)
+
+            main :: IO ()
+            main = do
+              let xs = sort [3, 1, 2]
+              putStrLn "sorted"
+            """;
+        Capture(window, "07-haskell-grammar");
+    }
 }

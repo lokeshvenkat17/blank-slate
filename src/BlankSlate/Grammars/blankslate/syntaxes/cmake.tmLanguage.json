@@ -1,0 +1,75 @@
+{
+  "name": "CMake",
+  "scopeName": "source.cmake",
+  "fileTypes": [
+    "cmake",
+    "CMakeLists.txt"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#variables"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:\\#).*$",
+      "name": "comment.line.cmake"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.cmake",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.cmake"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.cmake",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.cmake"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?<![\\w.])ON|OFF|TRUE|FALSE|YES|NO(?![\\w])",
+      "name": "constant.language.cmake"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.cmake"
+    },
+    "keywords": {
+      "match": "\\b(?:target_include_directories|target_compile_options|cmake_minimum_required|target_link_libraries|add_subdirectory|add_definitions|add_executable|enable_testing|find_package|find_library|endfunction|add_library|endforeach|find_path|endwhile|function|endmacro|continue|add_test|foreach|include|install|project|message|elseif|return|string|option|endif|while|macro|break|unset|else|list|file|set|if)\\b",
+      "name": "keyword.control.cmake"
+    },
+    "variables": {
+      "match": "\\$\\{[^}]*\\}",
+      "name": "variable.other.cmake"
+    }
+  }
+}

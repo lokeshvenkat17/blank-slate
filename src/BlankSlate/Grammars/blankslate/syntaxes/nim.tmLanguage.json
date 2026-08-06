@@ -1,0 +1,87 @@
+{
+  "name": "Nim",
+  "scopeName": "source.nim",
+  "fileTypes": [
+    "nim",
+    "nims",
+    "nimble"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#function-call"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:\\#).*$",
+      "name": "comment.line.nim"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.nim",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.nim"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.nim",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.nim"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?<![\\w.])true|false|nil|result(?![\\w])",
+      "name": "constant.language.nim"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.nim"
+    },
+    "keywords": {
+      "match": "\\b(?:converter|interface|continue|distinct|iterator|template|concept|discard|finally|include|except|export|import|method|object|return|static|block|break|const|defer|isnot|macro|mixin|notin|raise|tuple|using|while|yield|addr|bind|case|cast|elif|else|enum|from|func|proc|type|when|and|asm|div|end|for|let|mod|not|out|ptr|ref|shl|shr|try|var|xor|as|do|if|in|is|of|or)\\b",
+      "name": "keyword.control.nim"
+    },
+    "types": {
+      "match": "\\b(?:openArray|float32|float64|cstring|pointer|uint16|uint32|uint64|string|int16|int32|int64|uint8|float|array|range|int8|uint|bool|char|auto|int|seq|set)\\b",
+      "name": "storage.type.nim"
+    },
+    "function-call": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.nim"
+        }
+      }
+    }
+  }
+}

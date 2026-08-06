@@ -36,4 +36,9 @@
     <!-- Tests exercise internal host plumbing (event pumps, adapters) without widening the public API. -->
     <InternalsVisibleTo Include="BlankSlate.Tests" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Bundled TextMate grammars for languages TextMateSharp.Grammars doesn't ship. -->
+    <Content Include="Grammars\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

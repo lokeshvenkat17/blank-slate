@@ -864,20 +864,26 @@ public partial class MainViewModel : ViewModelBase
     public void ShowPluginMessage(string title, string message) => _dialogs?.ShowMessage(title, message);
 
     [RelayCommand]
-    private void OpenPluginsFolder()
+    private void OpenPluginsFolder() => OpenFolder(PersistenceService.PluginsDir, "Plugins");
+
+    /// <summary>Language &gt; Open Grammars Folder: where users drop their own TextMate grammars.</summary>
+    [RelayCommand]
+    private void OpenGrammarsFolder() => OpenFolder(SyntaxService.UserGrammarsDir, "Grammars");
+
+    private void OpenFolder(string path, string label)
     {
         try
         {
-            Directory.CreateDirectory(PersistenceService.PluginsDir);
+            Directory.CreateDirectory(path);
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                FileName = PersistenceService.PluginsDir,
+                FileName = path,
                 UseShellExecute = true,
             });
         }
         catch (Exception ex)
         {
-            ShowPluginMessage("Plugins", $"Could not open the plugins folder.\n\n{ex.Message}");
+            ShowPluginMessage(label, $"Could not open the folder.\n\n{ex.Message}");
         }
     }
 

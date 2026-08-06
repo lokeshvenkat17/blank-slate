@@ -1,0 +1,86 @@
+{
+  "name": "VHDL",
+  "scopeName": "source.vhdl",
+  "fileTypes": [
+    "vhd",
+    "vhdl"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#function-call"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:\\-\\-).*$",
+      "name": "comment.line.vhdl"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.vhdl",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.vhdl"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.vhdl",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.vhdl"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?i)(?<![\\w.])true|false(?![\\w])",
+      "name": "constant.language.vhdl"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.vhdl"
+    },
+    "keywords": {
+      "match": "(?i)\\b(?:architecture|procedure|component|variable|constant|function|generate|severity|process|package|library|generic|subtype|entity|signal|others|return|record|access|select|assert|report|begin|elsif|while|until|array|block|port|then|else|case|when|loop|next|exit|wait|body|type|file|with|null|end|map|for|use|of|is|if)\\b",
+      "name": "keyword.control.vhdl"
+    },
+    "types": {
+      "match": "(?i)\\b(?:std_logic_vector|bit_vector|std_logic|character|positive|unsigned|integer|natural|boolean|string|signed|real|time|bit)\\b",
+      "name": "storage.type.vhdl"
+    },
+    "function-call": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.vhdl"
+        }
+      }
+    }
+  }
+}

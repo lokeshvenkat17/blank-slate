@@ -11,7 +11,7 @@ Notepad++ is Windows-only. BlankSlate aims to bring the full Notepad++ feature s
 - **.NET 10** / C#
 - **Avalonia UI 12** — cross-platform XAML UI framework
 - **AvaloniaEdit** — text editor engine (Scintilla's spiritual counterpart in .NET)
-- **AvaloniaEdit.TextMate** — TextMate grammar-based syntax highlighting
+- **AvaloniaEdit.TextMate** — TextMate grammar-based syntax highlighting (82 languages)
 - **CommunityToolkit.Mvvm** — MVVM source generators
 
 ## Building & running
@@ -37,7 +37,7 @@ BLANKSLATE_SHOT_DIR=/tmp/shots dotnet test --filter FullyQualifiedName~Screensho
 | 1 | Core editor shell: tabs, open/save, dirty tracking, close prompts, menus, status bar, drag-and-drop | ✅ |
 | 2 | Editor essentials: encoding & EOL detection/conversion, word wrap, zoom, whitespace display | ✅ |
 | 3 | Search suite: Find/Replace (regex), Find in Files, bookmarks | ✅ |
-| 4 | Syntax highlighting for 64 languages via TextMate grammars, themes | ✅ |
+| 4 | Syntax highlighting for 82 languages via TextMate grammars, themes — see [docs/adding-languages.md](docs/adding-languages.md) | ✅ |
 | 5 | Sessions, settings persistence, recent files, auto-backup | ✅ |
 | 6 | Power features: macros, split view, function list, document map | ✅ |
 | 7 | Plugin system (.NET plugin API) — see [docs/writing-plugins.md](docs/writing-plugins.md) | ✅ |

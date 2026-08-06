@@ -1,0 +1,81 @@
+{
+  "name": "Scheme",
+  "scopeName": "source.scheme",
+  "fileTypes": [
+    "scm",
+    "ss",
+    "sch",
+    "rkt",
+    "lisp",
+    "lsp",
+    "el",
+    "cl"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#extra0"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:;).*$",
+      "name": "comment.line.scheme"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.scheme",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.scheme"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.scheme",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.scheme"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?<![\\w.])\\#t|\\#f|nil|t(?![\\w])",
+      "name": "constant.language.scheme"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.scheme"
+    },
+    "keywords": {
+      "match": "\\b(?:call\\-with\\-current\\-continuation|define\\-syntax|syntax\\-rules|defparameter|quasiquote|defmacro|unquote|call/cc|define|lambda|letrec|unless|defvar|begin|delay|force|quote|defun|progn|let\\*|cond|case|when|set!|else|setq|let|and|not|if|or|do)\\b",
+      "name": "keyword.control.scheme"
+    },
+    "extra0": {
+      "match": "(?<=\\()\\s*([a-zA-Z_!?*/+<>=-][a-zA-Z0-9_!?*/+<>=.-]*)",
+      "name": "entity.name.function.scheme"
+    }
+  }
+}

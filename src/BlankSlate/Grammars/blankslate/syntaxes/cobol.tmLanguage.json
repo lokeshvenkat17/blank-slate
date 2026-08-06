@@ -1,0 +1,77 @@
+{
+  "name": "COBOL",
+  "scopeName": "source.cobol",
+  "fileTypes": [
+    "cbl",
+    "cob",
+    "cpy",
+    "cobol"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:\\*>).*$",
+      "name": "comment.line.cobol"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.cobol",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.cobol"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.cobol",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.cobol"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?i)(?<![\\w.])ZERO|ZEROS|ZEROES|SPACE|SPACES|HIGH\\-VALUE|HIGH\\-VALUES|LOW\\-VALUE|LOW\\-VALUES|NULL(?![\\w])",
+      "name": "constant.language.cobol"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.cobol"
+    },
+    "keywords": {
+      "match": "(?i)\\b(?:WORKING\\-STORAGE|IDENTIFICATION|LOCAL\\-STORAGE|ORGANIZATION|END\\-EVALUATE|ENVIRONMENT|END\\-PERFORM|PROGRAM\\-ID|INITIALIZE|PROCEDURE|REDEFINES|DIVISION|SUBTRACT|MULTIPLY|EVALUATE|CONTINUE|UNSTRING|SECTION|LINKAGE|REWRITE|COMPUTE|PERFORM|VARYING|INSPECT|DISPLAY|RELEASE|PICTURE|SELECT|ASSIGN|ACCESS|DELETE|DIVIDE|END\\-IF|STRING|ACCEPT|SEARCH|RETURN|OCCURS|CLOSE|WRITE|START|UNTIL|USING|MERGE|VALUE|USAGE|DATA|FILE|OPEN|READ|MOVE|ELSE|WHEN|STOP|CALL|EXIT|SORT|COPY|ADD|RUN|SET|PIC|IF|GO|TO)\\b",
+      "name": "keyword.control.cobol"
+    },
+    "types": {
+      "match": "(?i)\\b(?:PACKED\\-DECIMAL|DISPLAY\\-1|COMP\\-3|BINARY|INDEX|COMP)\\b",
+      "name": "storage.type.cobol"
+    }
+  }
+}

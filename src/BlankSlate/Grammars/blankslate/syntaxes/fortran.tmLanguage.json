@@ -1,0 +1,82 @@
+{
+  "name": "Fortran",
+  "scopeName": "source.fortran",
+  "fileTypes": [
+    "f",
+    "for",
+    "f77",
+    "f90",
+    "f95",
+    "f03",
+    "f08",
+    "ftn",
+    "fpp"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:!).*$",
+      "name": "comment.line.fortran"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.fortran",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.fortran"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.fortran",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.fortran"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?i)(?<![\\w.])\\.true\\.|\\.false\\.(?![\\w])",
+      "name": "constant.language.fortran"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.fortran"
+    },
+    "keywords": {
+      "match": "(?i)\\b(?:equivalence|subroutine|deallocate|interface|associate|elemental|recursive|parameter|function|implicit|contains|continue|allocate|optional|program|default|nullify|private|include|module|elseif|select|return|forall|result|intent|public|common|format|endif|enddo|while|print|write|close|where|block|none|then|else|case|goto|call|stop|read|open|pure|save|data|type|end|use|if|do)\\b",
+      "name": "keyword.control.fortran"
+    },
+    "types": {
+      "match": "(?i)\\b(?:allocatable|character|precision|dimension|integer|complex|logical|pointer|double|target|real|kind)\\b",
+      "name": "storage.type.fortran"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "name": "Tcl",
+  "scopeName": "source.tcl",
+  "fileTypes": [
+    "tcl",
+    "tk",
+    "itcl"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#function-call"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:\\#).*$",
+      "name": "comment.line.tcl"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.tcl",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.tcl"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.tcl",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.tcl"
+        }
+      ]
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.tcl"
+    },
+    "keywords": {
+      "match": "\\b(?:namespace|continue|variable|foreach|package|llength|lappend|elseif|switch|return|source|global|lindex|string|regexp|regsub|while|break|catch|error|upvar|array|close|proc|else|expr|eval|list|incr|puts|open|gets|set|for|if)\\b",
+      "name": "keyword.control.tcl"
+    },
+    "variables": {
+      "match": "\\$\\{?[A-Za-z_][A-Za-z0-9_]*\\}?",
+      "name": "variable.other.tcl"
+    },
+    "function-call": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.tcl"
+        }
+      }
+    }
+  }
+}

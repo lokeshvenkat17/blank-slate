@@ -1,0 +1,76 @@
+{
+  "name": "NSIS",
+  "scopeName": "source.nsis",
+  "fileTypes": [
+    "nsi",
+    "nsh"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#block-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#variables"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?:;|\\#).*$",
+      "name": "comment.line.nsis"
+    },
+    "block-comment": {
+      "begin": "/\\*",
+      "end": "\\*/",
+      "name": "comment.block.nsis"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.nsis",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.nsis"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.nsis",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.nsis"
+        }
+      ]
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.nsis"
+    },
+    "keywords": {
+      "match": "\\b(?:RequestExecutionLevel|WriteUninstaller|SectionGroupEnd|CreateDirectory|CreateShortCut|DeleteRegValue|WriteRegDWORD|SectionGroup|DeleteRegKey|IfFileExists|FunctionEnd|WriteRegStr|SectionEnd|SetOutPath|MessageBox|InstallDir|UninstPage|Function|IfErrors|ExecWait|Section|OutFile|Delete|Return|StrCmp|IntCmp|StrCpy|RMDir|Abort|IntOp|File|Call|Goto|Quit|Push|Exch|Exec|Name|Page|Pop|Var)\\b",
+      "name": "keyword.control.nsis"
+    },
+    "variables": {
+      "match": "\\$\\{?[A-Za-z_][A-Za-z0-9_]*\\}?",
+      "name": "variable.other.nsis"
+    }
+  }
+}

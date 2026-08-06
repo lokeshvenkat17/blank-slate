@@ -1,0 +1,89 @@
+{
+  "name": "Verilog",
+  "scopeName": "source.verilog",
+  "fileTypes": [
+    "v",
+    "vh",
+    "sv",
+    "svh"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#block-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#function-call"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?://).*$",
+      "name": "comment.line.verilog"
+    },
+    "block-comment": {
+      "begin": "/\\*",
+      "end": "\\*/",
+      "name": "comment.block.verilog"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.verilog",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.verilog"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.verilog",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.verilog"
+        }
+      ]
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.verilog"
+    },
+    "keywords": {
+      "match": "\\b(?:always_latch|endinterface|always_comb|endfunction|endgenerate|endpackage|endmodule|always_ff|interface|function|generate|endclass|continue|endcase|default|forever|initial|posedge|negedge|endtask|package|typedef|disable|release|module|output|repeat|always|assign|import|export|return|input|inout|begin|casex|casez|while|class|break|force|else|case|task|fork|join|wait|end|for|if)\\b",
+      "name": "keyword.control.verilog"
+    },
+    "types": {
+      "match": "\\b(?:localparam|parameter|shortint|realtime|unsigned|integer|longint|genvar|signed|struct|string|logic|union|wire|byte|time|real|enum|void|reg|bit|int)\\b",
+      "name": "storage.type.verilog"
+    },
+    "function-call": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.verilog"
+        }
+      }
+    }
+  }
+}

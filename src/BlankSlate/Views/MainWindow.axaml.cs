@@ -204,6 +204,13 @@ public partial class MainWindow : Window
             }
             LanguageMenu.Items.Add(groupItem);
         }
+
+        LanguageMenu.Items.Add(new Separator());
+        LanguageMenu.Items.Add(new MenuItem
+        {
+            Header = "Open Grammars Folder…",
+            Command = ViewModel.OpenGrammarsFolderCommand,
+        });
     }
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;

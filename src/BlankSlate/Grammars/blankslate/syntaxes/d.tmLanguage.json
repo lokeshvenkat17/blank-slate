@@ -1,0 +1,94 @@
+{
+  "name": "D",
+  "scopeName": "source.d",
+  "fileTypes": [
+    "d",
+    "di"
+  ],
+  "patterns": [
+    {
+      "include": "#line-comment"
+    },
+    {
+      "include": "#block-comment"
+    },
+    {
+      "include": "#double-string"
+    },
+    {
+      "include": "#single-string"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#function-call"
+    }
+  ],
+  "repository": {
+    "line-comment": {
+      "match": "(?://).*$",
+      "name": "comment.line.d"
+    },
+    "block-comment": {
+      "begin": "/\\*",
+      "end": "\\*/",
+      "name": "comment.block.d"
+    },
+    "double-string": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.d",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.d"
+        }
+      ]
+    },
+    "single-string": {
+      "begin": "'",
+      "end": "'",
+      "name": "string.quoted.single.d",
+      "patterns": [
+        {
+          "match": "\\\\.",
+          "name": "constant.character.escape.d"
+        }
+      ]
+    },
+    "constants": {
+      "match": "(?<![\\w.])true|false|null(?![\\w])",
+      "name": "constant.language.d"
+    },
+    "numbers": {
+      "match": "\\b(?:0[xX][0-9a-fA-F]+|\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)\\b",
+      "name": "constant.numeric.d"
+    },
+    "keywords": {
+      "match": "\\b(?:foreach_reverse|synchronized|interface|protected|immutable|invariant|continue|template|override|abstract|unittest|foreach|default|finally|private|package|nothrow|version|module|import|switch|return|struct|typeof|delete|public|export|static|shared|assert|while|break|catch|throw|class|union|mixin|alias|super|final|const|inout|scope|debug|else|case|goto|enum|cast|this|pure|auto|with|lazy|body|for|try|new|ref|out|asm|if|do|in|is)\\b",
+      "name": "keyword.control.d"
+    },
+    "types": {
+      "match": "\\b(?:ptrdiff_t|wstring|dstring|ushort|double|string|size_t|ubyte|short|ulong|ucent|float|wchar|dchar|void|bool|byte|uint|long|cent|real|char|int)\\b",
+      "name": "storage.type.d"
+    },
+    "function-call": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",
+      "captures": {
+        "1": {
+          "name": "entity.name.function.d"
+        }
+      }
+    }
+  }
+}

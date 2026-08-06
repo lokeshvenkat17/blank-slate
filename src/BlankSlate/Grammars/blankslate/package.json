@@ -1,0 +1,324 @@
+{
+  "name": "blankslate-grammars",
+  "displayName": "BlankSlate bundled grammars",
+  "description": "Additional TextMate grammars authored for BlankSlate.",
+  "version": "1.0.0",
+  "publisher": "blankslate",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "toml",
+        "extensions": [
+          ".toml"
+        ],
+        "aliases": [
+          "TOML",
+          "TOML"
+        ]
+      },
+      {
+        "id": "cmake",
+        "extensions": [
+          ".cmake",
+          "CMakeLists.txt"
+        ],
+        "aliases": [
+          "CMake",
+          "CMake"
+        ]
+      },
+      {
+        "id": "haskell",
+        "extensions": [
+          ".hs",
+          ".lhs"
+        ],
+        "aliases": [
+          "Haskell",
+          "Haskell"
+        ]
+      },
+      {
+        "id": "erlang",
+        "extensions": [
+          ".erl",
+          ".hrl"
+        ],
+        "aliases": [
+          "Erlang",
+          "Erlang"
+        ]
+      },
+      {
+        "id": "tcl",
+        "extensions": [
+          ".tcl",
+          ".tk",
+          ".itcl"
+        ],
+        "aliases": [
+          "Tcl",
+          "Tcl"
+        ]
+      },
+      {
+        "id": "d",
+        "extensions": [
+          ".d",
+          ".di"
+        ],
+        "aliases": [
+          "D",
+          "D"
+        ]
+      },
+      {
+        "id": "nim",
+        "extensions": [
+          ".nim",
+          ".nims",
+          ".nimble"
+        ],
+        "aliases": [
+          "Nim",
+          "Nim"
+        ]
+      },
+      {
+        "id": "scheme",
+        "extensions": [
+          ".scm",
+          ".ss",
+          ".sch",
+          ".rkt",
+          ".lisp",
+          ".lsp",
+          ".el",
+          ".cl"
+        ],
+        "aliases": [
+          "Scheme",
+          "Scheme",
+          "Lisp"
+        ]
+      },
+      {
+        "id": "fortran",
+        "extensions": [
+          ".f",
+          ".for",
+          ".f77",
+          ".f90",
+          ".f95",
+          ".f03",
+          ".f08",
+          ".ftn",
+          ".fpp"
+        ],
+        "aliases": [
+          "Fortran",
+          "Fortran"
+        ]
+      },
+      {
+        "id": "verilog",
+        "extensions": [
+          ".v",
+          ".vh",
+          ".sv",
+          ".svh"
+        ],
+        "aliases": [
+          "Verilog",
+          "Verilog",
+          "SystemVerilog"
+        ]
+      },
+      {
+        "id": "vhdl",
+        "extensions": [
+          ".vhd",
+          ".vhdl"
+        ],
+        "aliases": [
+          "VHDL",
+          "VHDL"
+        ]
+      },
+      {
+        "id": "ada",
+        "extensions": [
+          ".adb",
+          ".ads",
+          ".ada"
+        ],
+        "aliases": [
+          "Ada",
+          "Ada"
+        ]
+      },
+      {
+        "id": "cobol",
+        "extensions": [
+          ".cbl",
+          ".cob",
+          ".cpy",
+          ".cobol"
+        ],
+        "aliases": [
+          "COBOL",
+          "COBOL"
+        ]
+      },
+      {
+        "id": "smalltalk",
+        "extensions": [
+          ".st",
+          ".cs.st"
+        ],
+        "aliases": [
+          "Smalltalk",
+          "Smalltalk"
+        ]
+      },
+      {
+        "id": "matlab",
+        "extensions": [
+          ".mlx"
+        ],
+        "aliases": [
+          "MATLAB",
+          "MATLAB",
+          "Octave"
+        ]
+      },
+      {
+        "id": "gdscript",
+        "extensions": [
+          ".gd"
+        ],
+        "aliases": [
+          "GDScript",
+          "GDScript"
+        ]
+      },
+      {
+        "id": "registry",
+        "extensions": [
+          ".reg"
+        ],
+        "aliases": [
+          "Windows Registry",
+          "Registry"
+        ]
+      },
+      {
+        "id": "nsis",
+        "extensions": [
+          ".nsi",
+          ".nsh"
+        ],
+        "aliases": [
+          "NSIS",
+          "NSIS"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "toml",
+        "scopeName": "source.toml",
+        "path": "./syntaxes/toml.tmLanguage.json"
+      },
+      {
+        "language": "cmake",
+        "scopeName": "source.cmake",
+        "path": "./syntaxes/cmake.tmLanguage.json"
+      },
+      {
+        "language": "haskell",
+        "scopeName": "source.haskell",
+        "path": "./syntaxes/haskell.tmLanguage.json"
+      },
+      {
+        "language": "erlang",
+        "scopeName": "source.erlang",
+        "path": "./syntaxes/erlang.tmLanguage.json"
+      },
+      {
+        "language": "tcl",
+        "scopeName": "source.tcl",
+        "path": "./syntaxes/tcl.tmLanguage.json"
+      },
+      {
+        "language": "d",
+        "scopeName": "source.d",
+        "path": "./syntaxes/d.tmLanguage.json"
+      },
+      {
+        "language": "nim",
+        "scopeName": "source.nim",
+        "path": "./syntaxes/nim.tmLanguage.json"
+      },
+      {
+        "language": "scheme",
+        "scopeName": "source.scheme",
+        "path": "./syntaxes/scheme.tmLanguage.json"
+      },
+      {
+        "language": "fortran",
+        "scopeName": "source.fortran",
+        "path": "./syntaxes/fortran.tmLanguage.json"
+      },
+      {
+        "language": "verilog",
+        "scopeName": "source.verilog",
+        "path": "./syntaxes/verilog.tmLanguage.json"
+      },
+      {
+        "language": "vhdl",
+        "scopeName": "source.vhdl",
+        "path": "./syntaxes/vhdl.tmLanguage.json"
+      },
+      {
+        "language": "ada",
+        "scopeName": "source.ada",
+        "path": "./syntaxes/ada.tmLanguage.json"
+      },
+      {
+        "language": "cobol",
+        "scopeName": "source.cobol",
+        "path": "./syntaxes/cobol.tmLanguage.json"
+      },
+      {
+        "language": "smalltalk",
+        "scopeName": "source.smalltalk",
+        "path": "./syntaxes/smalltalk.tmLanguage.json"
+      },
+      {
+        "language": "matlab",
+        "scopeName": "source.matlab",
+        "path": "./syntaxes/matlab.tmLanguage.json"
+      },
+      {
+        "language": "gdscript",
+        "scopeName": "source.gdscript",
+        "path": "./syntaxes/gdscript.tmLanguage.json"
+      },
+      {
+        "language": "registry",
+        "scopeName": "source.registry",
+        "path": "./syntaxes/registry.tmLanguage.json"
+      },
+      {
+        "language": "nsis",
+        "scopeName": "source.nsis",
+        "path": "./syntaxes/nsis.tmLanguage.json"
+      }
+    ]
+  }
+}
