@@ -87,6 +87,7 @@ public partial class MainViewModel : ViewModelBase
     {
         _dialogs = dialogs;
         FindReplace = new FindReplaceViewModel(this);
+        Documents.CollectionChanged += (_, _) => RefreshViews();
         NewFile();
     }
 
@@ -98,6 +99,7 @@ public partial class MainViewModel : ViewModelBase
             newValue.PropertyChanged += OnSelectedDocumentPropertyChanged;
         UpdateWindowTitle();
         WatchFunctionListDocument(newValue);
+        SyncViewSelectionFrom(newValue);
         if (newValue is not null)
             PluginHost?.RaiseActiveDocumentChanged(newValue);
     }
@@ -806,6 +808,155 @@ public partial class MainViewModel : ViewModelBase
                 Name = data.Name,
                 Steps = data.Steps.Select(s => s.ToStep()).ToList(),
             });
+        }
+    }
+
+    /// <summary>Edit &gt; Auto-Completion &gt; Word Completion.</summary>
+    [RelayCommand]
+    private void WordCompletion() => SelectedDocument?.EditorHandle?.ShowWordCompletion();
+
+    // ---- Two editor views / tab groups (Phase 6c) ----
+
+    /// <summary>Documents shown in the main tab group.</summary>
+    public ObservableCollection<DocumentViewModel> PrimaryDocuments { get; } = [];
+
+    /// <summary>Documents shown in the second tab group (empty until something is moved there).</summary>
+    public ObservableCollection<DocumentViewModel> SecondaryDocuments { get; } = [];
+
+    [ObservableProperty]
+    public partial DocumentViewModel? PrimarySelectedDocument { get; set; }
+
+    [ObservableProperty]
+    public partial DocumentViewModel? SecondarySelectedDocument { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsSecondaryViewVisible { get; set; }
+
+    /// <summary>Which tab group has focus; drives what <see cref="SelectedDocument"/> points at.</summary>
+    [ObservableProperty]
+    public partial int ActiveViewIndex { get; set; }
+
+    private bool _syncingSelection;
+
+    /// <summary>Rebuilds the per-view tab lists from <see cref="Documents"/>.</summary>
+    private void RefreshViews()
+    {
+        var primarySelection = PrimarySelectedDocument;
+        var secondarySelection = SecondarySelectedDocument;
+
+        PrimaryDocuments.Clear();
+        SecondaryDocuments.Clear();
+        foreach (var doc in Documents)
+        {
+            if (doc.ViewIndex == 1)
+                SecondaryDocuments.Add(doc);
+            else
+                PrimaryDocuments.Add(doc);
+        }
+
+        IsSecondaryViewVisible = SecondaryDocuments.Count > 0;
+
+        // Restoring tab selection must not steal the active view — that only changes
+        // when the user picks a tab or clicks into an editor.
+        _syncingSelection = true;
+        try
+        {
+            PrimarySelectedDocument = PrimaryDocuments.Contains(primarySelection!)
+                ? primarySelection : PrimaryDocuments.LastOrDefault();
+            SecondarySelectedDocument = SecondaryDocuments.Contains(secondarySelection!)
+                ? secondarySelection : SecondaryDocuments.LastOrDefault();
+        }
+        finally { _syncingSelection = false; }
+    }
+
+    partial void OnPrimarySelectedDocumentChanged(DocumentViewModel? value)
+    {
+        if (_syncingSelection || value is null)
+            return;
+        ActiveViewIndex = 0;
+        SetActiveDocument(value);
+    }
+
+    partial void OnSecondarySelectedDocumentChanged(DocumentViewModel? value)
+    {
+        if (_syncingSelection || value is null)
+            return;
+        ActiveViewIndex = 1;
+        SetActiveDocument(value);
+    }
+
+    private void SetActiveDocument(DocumentViewModel doc)
+    {
+        _syncingSelection = true;
+        try { SelectedDocument = doc; }
+        finally { _syncingSelection = false; }
+    }
+
+    /// <summary>Keeps the owning tab group's selection in step when code sets SelectedDocument.</summary>
+    private void SyncViewSelectionFrom(DocumentViewModel? doc)
+    {
+        if (_syncingSelection || doc is null)
+            return;
+        _syncingSelection = true;
+        try
+        {
+            if (doc.ViewIndex == 1)
+            {
+                SecondarySelectedDocument = doc;
+                ActiveViewIndex = 1;
+            }
+            else
+            {
+                PrimarySelectedDocument = doc;
+                ActiveViewIndex = 0;
+            }
+        }
+        finally { _syncingSelection = false; }
+    }
+
+    /// <summary>View &gt; Move Current Document to Other View.</summary>
+    [RelayCommand]
+    private void MoveToOtherView()
+    {
+        if (SelectedDocument is not { } doc)
+            return;
+        doc.ViewIndex = doc.ViewIndex == 0 ? 1 : 0;
+        RefreshViews();
+        SetActiveDocument(doc);
+        SyncViewSelectionFrom(doc);
+    }
+
+    /// <summary>View &gt; Clone Current Document to Other View — both tabs share one buffer.</summary>
+    [RelayCommand]
+    private void CloneToOtherView()
+    {
+        if (SelectedDocument is not { } doc || doc.IsClone)
+            return;
+        var clone = DocumentViewModel.CreateClone(doc);
+        Documents.Add(clone);
+        RefreshViews();
+    }
+
+    // ---- Begin/End Select (Notepad++ Edit menu) ----
+
+    private int? _selectionAnchor;
+
+    /// <summary>Marks an anchor, then extends the selection from it to the caret on the next call.</summary>
+    [RelayCommand]
+    private void BeginEndSelect()
+    {
+        if (SelectedDocument?.EditorHandle is not { } handle)
+            return;
+        if (_selectionAnchor is { } anchor)
+        {
+            var start = Math.Min(anchor, handle.CaretOffset);
+            var length = Math.Abs(handle.CaretOffset - anchor);
+            handle.SelectAndReveal(start, length);
+            _selectionAnchor = null;
+        }
+        else
+        {
+            _selectionAnchor = handle.CaretOffset;
         }
     }
 

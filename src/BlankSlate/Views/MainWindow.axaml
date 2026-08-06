@@ -19,14 +19,14 @@
 
   <!-- Compact Notepad++-style file tabs (Fluent default is oversized pivot headers) -->
   <Window.Styles>
-    <Style Selector="TabControl#DocumentTabs > TabItem">
+    <Style Selector="TabControl#DocumentTabs > TabItem, TabControl#SecondaryTabs > TabItem">
       <Setter Property="FontSize" Value="13" />
       <Setter Property="FontWeight" Value="Normal" />
       <Setter Property="Padding" Value="12,5" />
       <Setter Property="MinHeight" Value="30" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-    <Style Selector="TabControl#DocumentTabs > TabItem:selected">
+    <Style Selector="TabControl#DocumentTabs > TabItem:selected, TabControl#SecondaryTabs > TabItem:selected">
       <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
     </Style>
   </Window.Styles>
@@ -69,6 +69,12 @@
         <Separator />
         <MenuItem Header="Select _All" Command="{Binding SelectAllCommand}"
                   InputGesture="{OnPlatform Ctrl+A, macOS=Cmd+A}" />
+        <MenuItem Header="_Auto-Completion">
+          <MenuItem Header="Word Completion" Command="{Binding WordCompletionCommand}"
+                    HotKey="{OnPlatform Ctrl+Space, macOS=Cmd+Space}" InputGesture="{OnPlatform Ctrl+Space, macOS=Ctrl+Space}" />
+        </MenuItem>
+        <MenuItem Header="Begin/End Select" Command="{Binding BeginEndSelectCommand}"
+                  InputGesture="{OnPlatform Ctrl+Alt+M, macOS=Cmd+Alt+M}" />
         <Separator />
         <MenuItem Header="Insert">
           <MenuItem Header="Date Time (short)" Command="{Binding InsertDateTimeShortCommand}" />
@@ -260,7 +266,8 @@
         <MenuItem Header="Show End of _Line" ToggleType="CheckBox" IsChecked="{Binding Settings.ShowEndOfLine}" />
         <MenuItem Header="Highlight Current _Line" ToggleType="CheckBox" IsChecked="{Binding Settings.HighlightCurrentLine}" />
         <Separator />
-        <MenuItem Header="Split Window" ToggleType="CheckBox" IsChecked="{Binding IsSplitViewActive}" />
+        <MenuItem Header="_Move Current Document to Other View" Command="{Binding MoveToOtherViewCommand}" />
+        <MenuItem Header="C_lone Current Document to Other View" Command="{Binding CloneToOtherViewCommand}" />
         <MenuItem Header="Document _Map" ToggleType="CheckBox" IsChecked="{Binding IsDocumentMapVisible}" />
         <MenuItem Header="_Function List" ToggleType="CheckBox" IsChecked="{Binding IsFunctionListVisible}" />
         <Separator />
@@ -364,15 +371,16 @@
     <!-- ============ Document tabs + search results ============ -->
     <Grid RowDefinitions="*,Auto,Auto">
 
-      <DockPanel Grid.Row="0">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Name="ViewsGrid">
+      <DockPanel Grid.Column="0">
       <Button DockPanel.Dock="Right" VerticalAlignment="Top"
               Content="+" FontSize="18" Padding="9,2" Margin="2,3,6,0"
               Background="Transparent" BorderThickness="0"
               Command="{Binding NewFileCommand}"
               ToolTip.Tip="New tab (⌘N)" />
       <TabControl Name="DocumentTabs"
-                  ItemsSource="{Binding Documents}"
-                  SelectedItem="{Binding SelectedDocument}"
+                  ItemsSource="{Binding PrimaryDocuments}"
+                  SelectedItem="{Binding PrimarySelectedDocument}"
                   Padding="0">
         <TabControl.ItemTemplate>
           <DataTemplate x:DataType="vm:DocumentViewModel">
@@ -400,6 +408,37 @@
         </TabControl.ContentTemplate>
       </TabControl>
       </DockPanel>
+
+      <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch"
+                    IsVisible="{Binding IsSecondaryViewVisible}" />
+
+      <!-- Second tab group (Notepad++'s other view) -->
+      <TabControl Grid.Column="2" Name="SecondaryTabs" Padding="0"
+                  IsVisible="{Binding IsSecondaryViewVisible}"
+                  ItemsSource="{Binding SecondaryDocuments}"
+                  SelectedItem="{Binding SecondarySelectedDocument}">
+        <TabControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:DocumentViewModel">
+            <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent"
+                        DoubleTapped="OnTabHeaderDoubleTapped"
+                        ToolTip.Tip="Double-click to rename">
+              <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+              <TextBlock Text="•" VerticalAlignment="Center" FontWeight="Bold"
+                         IsVisible="{Binding IsDirty}" />
+              <Button Content="✕" FontSize="10" Padding="4,1"
+                      Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
+                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).CloseDocumentCommand}"
+                      CommandParameter="{Binding}" />
+            </StackPanel>
+          </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+          <DataTemplate x:DataType="vm:DocumentViewModel">
+            <views:DocumentEditorHost />
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+      </Grid>
 
       <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch"
                     IsVisible="{Binding IsSearchResultsVisible}" />

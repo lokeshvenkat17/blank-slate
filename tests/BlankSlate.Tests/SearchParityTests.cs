@@ -2,6 +2,7 @@ using System.Linq;
 using AvaloniaEdit.Document;
 using BlankSlate.Models;
 using BlankSlate.Services;
+using Avalonia.Headless.XUnit;
 using Xunit;
 
 namespace BlankSlate.Tests;
@@ -54,7 +55,7 @@ public class StyleMarkSetTests
         return (doc, new StyleMarkSet(doc));
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void MarkAll_StylesEveryWholeWordOccurrence()
     {
         var (_, marks) = Setup("foo bar foo foobar foo");
@@ -63,7 +64,7 @@ public class StyleMarkSetTests
         Assert.Equal(3, marks.GetSegments(0).Count());
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void MarkAll_KeepsStylesIndependent()
     {
         var (_, marks) = Setup("alpha beta alpha");
@@ -76,7 +77,7 @@ public class StyleMarkSetTests
     }
 
     /// <summary>The reason marks use anchored segments: they must follow their text.</summary>
-    [Fact]
+    [AvaloniaFact]
     public void Marks_FollowTextThroughEdits()
     {
         var (doc, marks) = Setup("alpha beta");
@@ -91,7 +92,7 @@ public class StyleMarkSetTests
         Assert.Equal("beta", doc.GetText(after.StartOffset, after.Length));
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void Clear_RemovesOnlyThatStyle()
     {
         var (_, marks) = Setup("a b");
@@ -106,7 +107,7 @@ public class StyleMarkSetTests
         Assert.False(marks.HasAnyMarks);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void NextAndPreviousMark_WrapAround()
     {
         var (_, marks) = Setup("x .. x .. x");
@@ -118,7 +119,7 @@ public class StyleMarkSetTests
         Assert.Equal(10, marks.PreviousMark(0, 0)); // wraps to last
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void GetStyledText_ReturnsMarkedTextInOrder()
     {
         var (_, marks) = Setup("one two one");
@@ -127,7 +128,7 @@ public class StyleMarkSetTests
         Assert.Equal(["one", "one"], lines.Select(l => l.Trim()).ToArray());
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void MarkOne_DoesNotDuplicateTheSameRange()
     {
         var (_, marks) = Setup("hello");
@@ -136,7 +137,7 @@ public class StyleMarkSetTests
         Assert.Single(marks.GetSegments(0));
     }
 
-    [Theory]
+    [AvaloniaTheory]
     [InlineData("hello world", 0, "hello")]
     [InlineData("hello world", 7, "world")]
     [InlineData("foo_bar1 x", 2, "foo_bar1")]
@@ -148,7 +149,7 @@ public class StyleMarkSetTests
         Assert.Equal(expected, doc.GetText(word!.Value.Offset, word.Value.Length));
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void GetWordAt_ReturnsNullBetweenWords()
     {
         var doc = new TextDocument("a   b");
@@ -158,7 +159,7 @@ public class StyleMarkSetTests
 
 public class ChangeHistoryTests
 {
-    [Fact]
+    [AvaloniaFact]
     public void EditedLine_IsMarkedModified()
     {
         var doc = new TextDocument("one\ntwo\nthree");
@@ -173,7 +174,7 @@ public class ChangeHistoryTests
         Assert.Equal(ChangeState.None, history.GetLineState(1));
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void SavingConvertsModifiedToSaved()
     {
         var doc = new TextDocument("one\ntwo");
@@ -185,7 +186,7 @@ public class ChangeHistoryTests
         Assert.Equal(ChangeState.Saved, history.GetLineState(1));
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void SuppressTracking_IgnoresLoadingTheFile()
     {
         var doc = new TextDocument();
@@ -197,7 +198,7 @@ public class ChangeHistoryTests
         Assert.Empty(history.ChangedLines());
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void NextAndPreviousChange_WrapAround()
     {
         var doc = new TextDocument("a\nb\nc\nd");
@@ -215,7 +216,7 @@ public class ChangeHistoryTests
         Assert.Equal(3, history.PreviousChange(1)); // wraps
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void Clear_RemovesAllMarkers()
     {
         var doc = new TextDocument("x");

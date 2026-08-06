@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -48,6 +49,12 @@ public partial class MainWindow : Window
                 ViewModel.SavedMacros.CollectionChanged += (_, _) => BuildMacroMenu();
                 if (ViewModel.PluginHost is { } host)
                     host.CommandsChanged += (_, _) => BuildPluginsMenu();
+                ViewModel.PropertyChanged += (_, args) =>
+                {
+                    if (args.PropertyName == nameof(MainViewModel.IsSecondaryViewVisible))
+                        UpdateViewColumns();
+                };
+                UpdateViewColumns();
             }
         };
     }
@@ -115,6 +122,16 @@ public partial class MainWindow : Window
                 e.Handled = true;
                 break;
         }
+    }
+
+    /// <summary>Gives the second tab group half the width only while it holds documents.</summary>
+    private void UpdateViewColumns()
+    {
+        if (ViewModel is null)
+            return;
+        ViewsGrid.ColumnDefinitions[2].Width = ViewModel.IsSecondaryViewVisible
+            ? new GridLength(1, GridUnitType.Star)
+            : new GridLength(0);
     }
 
     private void OnAboutClick(object? sender, RoutedEventArgs e)

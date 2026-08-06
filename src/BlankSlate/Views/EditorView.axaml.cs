@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using AvaloniaEdit.TextMate;
 using BlankSlate.Services;
 using BlankSlate.ViewModels;
@@ -42,6 +43,9 @@ public partial class EditorView : UserControl, IEditorHandle
             app.ActualThemeVariantChanged += OnAppThemeChanged;
 
         Editor.TextArea.Caret.PositionChanged += (_, _) => UpdateCaretPosition();
+        // Clicking into an editor makes its tab group the active view, even when that
+        // group's tab selection didn't change.
+        Editor.TextArea.GotFocus += (_, _) => ActivateOwningDocument();
         Editor.PointerWheelChanged += OnPointerWheelChanged;
 
         DataContextChanged += (_, _) => OnDataContextSwitched();
@@ -176,7 +180,60 @@ public partial class EditorView : UserControl, IEditorHandle
         }
     }
 
+    private void ActivateOwningDocument()
+    {
+        if (!IsPrimary || _documentVm is null)
+            return;
+        if (this.FindAncestorOfType<Window>()?.DataContext is MainViewModel main
+            && !ReferenceEquals(main.SelectedDocument, _documentVm))
+            main.SelectedDocument = _documentVm;
+    }
+
     private void OnStyleMarksChanged(object? sender, EventArgs e) => Editor.TextArea.TextView.Redraw();
+
+    // ---- Word completion (Notepad++ Edit > Auto-Completion > Word Completion) ----
+
+    private AvaloniaEdit.CodeCompletion.CompletionWindow? _completionWindow;
+
+    /// <summary>Offers words already in the document that extend the partial word at the caret.</summary>
+    public void ShowWordCompletion()
+    {
+        _completionWindow?.Close();
+
+        var text = Editor.Document.Text;
+        var caret = Editor.CaretOffset;
+        var prefix = WordCompletion.GetPrefix(text, caret);
+        var suggestions = WordCompletion.GetSuggestions(text, prefix);
+        if (suggestions.Count == 0)
+            return;
+
+        var window = new AvaloniaEdit.CodeCompletion.CompletionWindow(Editor.TextArea)
+        {
+            StartOffset = caret - prefix.Length,
+            EndOffset = caret,
+        };
+        foreach (var word in suggestions)
+            window.CompletionList.CompletionData.Add(new WordCompletionData(word));
+
+        window.Closed += (_, _) => _completionWindow = null;
+        _completionWindow = window;
+        window.Show();
+    }
+
+    private sealed class WordCompletionData(string text) : AvaloniaEdit.CodeCompletion.ICompletionData
+    {
+        public Avalonia.Media.IImage? Image => null;
+        public string Text { get; } = text;
+        public object Content => Text;
+        public object Description => "word in document";
+        public double Priority => 0;
+
+        public void Complete(AvaloniaEdit.Editing.TextArea textArea,
+            AvaloniaEdit.Document.ISegment completionSegment,
+            EventArgs insertionRequestEventArgs)
+            => textArea.Document.Replace(completionSegment, Text);
+    }
+
 
     private void OnSettingsChanged(object? sender, PropertyChangedEventArgs e) => ApplySettings();
 

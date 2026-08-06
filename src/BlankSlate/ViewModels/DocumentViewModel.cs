@@ -37,6 +37,9 @@ public interface IEditorHandle
     Task SetClipboardTextAsync(string text);
     Task<string?> GetClipboardTextAsync();
 
+    /// <summary>Shows the word-completion popup for the partial word at the caret.</summary>
+    void ShowWordCompletion();
+
     /// <summary>Re-dispatches recorded macro input onto the editor.</summary>
     void ReplayText(string text);
     void ReplayKey(Avalonia.Input.Key key, Avalonia.Input.KeyModifiers modifiers);
@@ -48,7 +51,7 @@ public partial class DocumentViewModel : ViewModelBase
     private static int _untitledCounter;
     private bool _suppressDirty;
 
-    public TextDocument Document { get; } = new();
+    public TextDocument Document { get; }
 
     /// <summary>Set by EditorView when the tab's editor is attached.</summary>
     public IEditorHandle? EditorHandle { get; set; }
@@ -87,6 +90,26 @@ public partial class DocumentViewModel : ViewModelBase
 
     public BookmarkManager Bookmarks { get; }
 
+    /// <summary>Which editor view (tab group) this document lives in: 0 = main, 1 = second.</summary>
+    [ObservableProperty]
+    public partial int ViewIndex { get; set; }
+
+    /// <summary>True for a clone that shares another tab's buffer (Clone to Other View).</summary>
+    public bool IsClone { get; private init; }
+
+    /// <summary>Creates a clone sharing <paramref name="source"/>'s buffer, so edits appear in both tabs.</summary>
+    public static DocumentViewModel CreateClone(DocumentViewModel source) => new(source.Document)
+    {
+        FilePath = source.FilePath,
+        Title = source.Title,
+        LanguageId = source.LanguageId,
+        EncodingKind = source.EncodingKind,
+        EolMode = source.EolMode,
+        Settings = source.Settings,
+        IsClone = true,
+        ViewIndex = source.ViewIndex == 0 ? 1 : 0,
+    };
+
     /// <summary>Five Notepad++-style token highlight sets.</summary>
     public StyleMarkSet StyleMarks { get; }
 
@@ -108,9 +131,15 @@ public partial class DocumentViewModel : ViewModelBase
     /// <summary>Line to jump to once an editor attaches (used when opening a search result in a not-yet-materialized tab).</summary>
     public int? PendingCaretLine { get; set; }
 
-    public DocumentViewModel()
+    /// <summary>Shares an existing buffer (used by Clone to Other View).</summary>
+    private DocumentViewModel(TextDocument shared) : this(shared, countAsNew: false) { }
+
+    public DocumentViewModel() : this(new TextDocument(), countAsNew: true) { }
+
+    private DocumentViewModel(TextDocument document, bool countAsNew)
     {
-        Title = $"new {++_untitledCounter}";
+        Document = document;
+        Title = countAsNew ? $"new {++_untitledCounter}" : "clone";
         Bookmarks = new BookmarkManager(Document);
         StyleMarks = new StyleMarkSet(Document);
         ChangeHistory = new ChangeHistory(Document);

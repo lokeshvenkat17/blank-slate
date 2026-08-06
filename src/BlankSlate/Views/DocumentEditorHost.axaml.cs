@@ -55,7 +55,9 @@ public partial class DocumentEditorHost : UserControl
         if (_mainVm is null)
             return;
         MinimapPane.IsVisible = _mainVm.IsDocumentMapVisible;
-        SetSplit(_mainVm.IsSplitViewActive);
+        // Split is now real two-view tab groups (View > Move/Clone to Other View),
+        // so this host only manages the document map.
+        SetSplit(false);
     }
 
     private void SetSplit(bool active)

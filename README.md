@@ -39,6 +39,7 @@ BLANKSLATE_SHOT_DIR=/tmp/shots dotnet test --filter FullyQualifiedName~Screensho
 | 3 | Search suite: Find/Replace (regex), Find in Files, bookmarks | ✅ |
 | 4 | Syntax highlighting for 82 languages via TextMate grammars, themes — see [docs/adding-languages.md](docs/adding-languages.md) | ✅ |
 | 5 | Sessions, settings persistence, recent files, auto-backup | ✅ |
-| 6 | Power features: macros, split view, function list, document map | ✅ |
+| 6 | Power features: macros, two-view tab groups, function list, document map, word completion | ✅ |
 | 7 | Plugin system (.NET plugin API) — see [docs/writing-plugins.md](docs/writing-plugins.md) | ✅ |
 | 8 | macOS .app packaging & ad-hoc signing (`scripts/package-macos.sh`) | ✅ |
+| 3b/6c | Parity extras: 5 token styles, change history, brace matching, incremental search, Begin/End Select | ✅ |

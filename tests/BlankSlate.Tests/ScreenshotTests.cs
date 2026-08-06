@@ -212,4 +212,39 @@ public class ScreenshotTests
 
         Capture(window, "08-style-marks");
     }
+
+    [AvaloniaFact]
+    public void Capture_TwoViewTabGroups()
+    {
+        var window = new MainWindow { Width = 1100, Height = 650 };
+        var vm = new MainViewModel(null);
+        window.DataContext = vm;
+        window.Show();
+        window.UpdateLayout();
+        Dispatcher.UIThread.RunJobs();
+
+        var left = vm.SelectedDocument!;
+        left.LanguageId = "csharp";
+        left.Document.Text = """
+            // Left view
+            public sealed class Repository
+            {
+                public Item? Find(int id) => _items.GetValueOrDefault(id);
+            }
+            """;
+
+        vm.NewFileCommand.Execute(null);
+        var right = vm.SelectedDocument!;
+        right.LanguageId = "toml";
+        right.Document.Text = """
+            # Right view — moved with View > Move to Other View
+            [server]
+            host = "localhost"
+            port = 8080
+            debug = true
+            """;
+        vm.MoveToOtherViewCommand.Execute(null);
+
+        Capture(window, "09-two-views");
+    }
 }
