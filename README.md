@@ -39,7 +39,8 @@ If macOS still blocks it, run:
 xattr -dr com.apple.quarantine /Applications/BlankSlate.app
 ```
 
-Notarization is planned, which will remove this step entirely.
+Notarization is planned, which will remove this step entirely. Maintainers: see
+[docs/notarization.md](docs/notarization.md) for the signing and notarization setup.
 
 ## Building from source
 
